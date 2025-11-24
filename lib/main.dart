@@ -81,42 +81,31 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           ],
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Expanded(
-              flex: _currentIndex == 0 ? 2 : 1,
-              child: _buildNavItem(
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home,
-                label: 'Beranda',
-                index: 0,
-              ),
+            _buildNavItem(
+              icon: Icons.home_outlined,
+              activeIcon: Icons.home,
+              label: 'Beranda',
+              index: 0,
             ),
-            Expanded(
-              flex: _currentIndex == 1 ? 2 : 1,
-              child: _buildNavItem(
-                icon: Icons.assignment_outlined,
-                activeIcon: Icons.assignment,
-                label: 'Lapor',
-                index: 1,
-              ),
+            _buildNavItem(
+              icon: Icons.assignment_outlined,
+              activeIcon: Icons.assignment,
+              label: 'Lapor',
+              index: 1,
             ),
-            Expanded(
-              flex: _currentIndex == 2 ? 2 : 1,
-              child: _buildNavItem(
-                icon: Icons.history_outlined,
-                activeIcon: Icons.history,
-                label: 'Riwayat',
-                index: 2,
-              ),
+            _buildNavItem(
+              icon: Icons.history_outlined,
+              activeIcon: Icons.history,
+              label: 'Riwayat',
+              index: 2,
             ),
-            Expanded(
-              flex: _currentIndex == 3 ? 2 : 1,
-              child: _buildNavItem(
-                icon: Icons.person_outline,
-                activeIcon: Icons.person,
-                label: 'Profile',
-                index: 3,
-              ),
+            _buildNavItem(
+              icon: Icons.person_outline,
+              activeIcon: Icons.person,
+              label: 'Profile',
+              index: 3,
             ),
           ],
         ),
@@ -142,7 +131,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         curve: Curves.easeInOut,
         margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 16 : 12,
+          horizontal: isSelected ? 12 : 8,
           vertical: 8,
         ),
         decoration: BoxDecoration(
@@ -151,7 +140,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               isSelected ? activeIcon : icon,
@@ -160,19 +148,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             ),
             if (isSelected) ...[
               const SizedBox(width: 6),
-              Flexible(
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 150),
-                  opacity: isSelected ? 1.0 : 0.0,
-                  child: Text(
-                    label,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],

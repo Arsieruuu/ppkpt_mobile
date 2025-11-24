@@ -23,13 +23,13 @@ class LaporPage extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          // PNG Background with higher opacity
+          // PNG Background with full opacity
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/backgrounds/background_page.png'),
                 fit: BoxFit.cover,
-                opacity: 0.8,
+                opacity: 1.0,
               ),
             ),
           ),
