@@ -21,25 +21,77 @@ class RiwayatPage extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.history,
-              size: 64,
-              color: Colors.grey,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Halaman Riwayat',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
+      body: Stack(
+        children: [
+          // PNG Background
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/backgrounds/background_page.png'),
+                fit: BoxFit.cover,
+                opacity: 0.8,
               ),
             ),
-          ],
-        ),
+          ),
+          // Gradient orbs
+          Positioned(
+            top: 80,
+            left: -50,
+            child: Container(
+              width: 130,
+              height: 130,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF0068FF).withOpacity(0.12),
+                    const Color(0xFF0068FF).withOpacity(0.02),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 50,
+            right: -30,
+            child: Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFFFFBB00).withOpacity(0.1),
+                    const Color(0xFFFFBB00).withOpacity(0.02),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Main content
+          const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.history,
+                  size: 64,
+                  color: Colors.grey,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Halaman Riwayat',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
