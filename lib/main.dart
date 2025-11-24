@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
       title: 'PPKPT App',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
+          seedColor: const Color(0xFF0068FF),
           brightness: Brightness.light,
         ),
         useMaterial3: true,
@@ -141,7 +141,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           vertical: 8,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue[600] : Colors.transparent,
+          color: isSelected ? const Color(0xFF0068FF) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(

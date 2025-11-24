@@ -6,11 +6,20 @@ class RiwayatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Riwayat'),
-        backgroundColor: Colors.blue[600],
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.grey[50],
         elevation: 0,
+        scrolledUnderElevation: 0,
+        title: const Text(
+          'Riwayat',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        centerTitle: true,
       ),
       body: const Center(
         child: Column(
@@ -18,23 +27,14 @@ class RiwayatPage extends StatelessWidget {
           children: [
             Icon(
               Icons.history,
-              size: 80,
+              size: 64,
               color: Colors.grey,
             ),
             SizedBox(height: 16),
             Text(
               'Halaman Riwayat',
               style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Layout akan diisi setelah design selesai',
-              style: TextStyle(
-                fontSize: 14,
+                fontSize: 18,
                 color: Colors.grey,
               ),
             ),
