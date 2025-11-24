@@ -74,10 +74,10 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     await Future.delayed(const Duration(milliseconds: 800));
     _textController.forward();
 
-    // Navigate to main page after splash duration
+    // Navigate to onboarding page after splash duration
     await Future.delayed(const Duration(milliseconds: 3500));
     if (mounted) {
-      Navigator.of(context).pushReplacementNamed('/main');
+      Navigator.of(context).pushReplacementNamed('/onboarding');
     }
   }
 

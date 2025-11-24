@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pages/splash_page.dart';
+import 'pages/onboarding_screen.dart';
 import 'pages/beranda_page.dart';
 import 'pages/lapor_page.dart';
 import 'pages/riwayat_page.dart';
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
       ),
       home: const SplashPage(),
       routes: {
+        '/onboarding': (context) => const OnboardingScreen(),
         '/main': (context) => const MainNavigationPage(),
       },
       debugShowCheckedModeBanner: false,
