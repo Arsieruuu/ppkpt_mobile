@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'pages/splash_page.dart';
 import 'pages/beranda_page.dart';
 import 'pages/lapor_page.dart';
 import 'pages/riwayat_page.dart';
@@ -22,8 +23,12 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.grey[50],
+        fontFamily: 'Poppins',
       ),
-      home: const MainNavigationPage(),
+      home: const SplashPage(),
+      routes: {
+        '/main': (context) => const MainNavigationPage(),
+      },
       debugShowCheckedModeBanner: false,
     );
   }
