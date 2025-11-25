@@ -218,201 +218,229 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   Widget _buildPage1() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Illustration - Full width
-        SizedBox(
-          width: MediaQuery.of(context).size.width,
-          height: 382.57,
-          child: AnimatedBuilder(
-            animation: _fadeAnimation,
-            builder: (context, child) {
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: Image.asset(
-                  'assets/images/illustrations/onboarding1.png',
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                ),
-              );
-            },
-          ),
-        ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double screenHeight = constraints.maxHeight;
+        double imageHeight = screenHeight * 0.45; // 45% of available height
         
-        const SizedBox(height: 40),
-
-        // Welcome text with padding
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: AnimatedBuilder(
-            animation: _slideController,
-            builder: (context, child) {
-              return SlideTransition(
-                position: _slideAnimation,
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // "Hai! Selamat Datang di"
-                      const Text(
-                        'Hai ! Selamat Datang di',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          fontFamily: 'Poppins',
-                          color: Color(0xFFA2A2A2),
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: screenHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Illustration - Flexible height
+                SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: imageHeight.clamp(250.0, 400.0), // Min 250, Max 400
+                  child: AnimatedBuilder(
+                    animation: _fadeAnimation,
+                    builder: (context, child) {
+                      return FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Image.asset(
+                          'assets/images/illustrations/onboarding1.png',
+                          fit: BoxFit.contain,
+                          width: double.infinity,
                         ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      // "E-LAPOR PPKPT POLINELA" with different colors
-                      RichText(
-                        text: const TextSpan(
-                          children: [
-                            TextSpan(
-                              text: 'E-LAPOR ',
-                              style: TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w700,
-                                fontFamily: 'Poppins',
-                                color: Color(0xFF0068FF),
-                              ),
-                            ),
-                            TextSpan(
-                              text: 'PPKPT\n',
-                              style: TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w700,
-                                fontFamily: 'Poppins',
-                                color: Color(0xFFFFBB00),
-                              ),
-                            ),
-                            TextSpan(
-                              text: 'POLINELA',
-                              style: TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w700,
-                                fontFamily: 'Poppins',
-                                color: Color(0xFF0068FF),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Description text
-                      const Text(
-                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'Poppins',
-                          color: Color(0xFFA2A2A2),
-                          height: 1.5,
-                        ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
-              );
-            },
+                
+                SizedBox(height: screenHeight * 0.05), // 5% of screen height
+
+                // Welcome text with padding
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: AnimatedBuilder(
+                    animation: _slideController,
+                    builder: (context, child) {
+                      return SlideTransition(
+                        position: _slideAnimation,
+                        child: FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // "Hai! Selamat Datang di"
+                              Text(
+                                'Hai ! Selamat Datang di',
+                                style: TextStyle(
+                                  fontSize: screenHeight < 700 ? 16 : 20,
+                                  fontWeight: FontWeight.w700,
+                                  fontFamily: 'Poppins',
+                                  color: const Color(0xFFA2A2A2),
+                                ),
+                              ),
+
+                              SizedBox(height: screenHeight < 700 ? 6 : 8),
+
+                              // "E-LAPOR PPKPT POLINELA" with different colors
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: 'E-LAPOR ',
+                                      style: TextStyle(
+                                        fontSize: screenHeight < 700 ? 24 : 32,
+                                        fontWeight: FontWeight.w700,
+                                        fontFamily: 'Poppins',
+                                        color: const Color(0xFF0068FF),
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: 'PPKPT\n',
+                                      style: TextStyle(
+                                        fontSize: screenHeight < 700 ? 24 : 32,
+                                        fontWeight: FontWeight.w700,
+                                        fontFamily: 'Poppins',
+                                        color: const Color(0xFFFFBB00),
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: 'POLINELA',
+                                      style: TextStyle(
+                                        fontSize: screenHeight < 700 ? 24 : 32,
+                                        fontWeight: FontWeight.w700,
+                                        fontFamily: 'Poppins',
+                                        color: const Color(0xFF0068FF),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              SizedBox(height: screenHeight < 700 ? 12 : 16),
+
+                              // Description text
+                              Text(
+                                'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt',
+                                style: TextStyle(
+                                  fontSize: screenHeight < 700 ? 14 : 16,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'Poppins',
+                                  color: const Color(0xFFA2A2A2),
+                                  height: 1.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                
+                SizedBox(height: screenHeight * 0.1), // 10% bottom spacing
+              ],
+            ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
   Widget _buildPage2() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Illustration - Full width
-        SizedBox(
-          width: MediaQuery.of(context).size.width,
-          height: 382.57,
-          child: AnimatedBuilder(
-            animation: _fadeAnimation,
-            builder: (context, child) {
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: Image.asset(
-                  'assets/images/illustrations/onboarding2.png',
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                ),
-              );
-            },
-          ),
-        ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double screenHeight = constraints.maxHeight;
+        double imageHeight = screenHeight * 0.45; // 45% of available height
         
-        const SizedBox(height: 40),
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: screenHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Illustration - Flexible height
+                SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: imageHeight.clamp(250.0, 400.0), // Min 250, Max 400
+                  child: AnimatedBuilder(
+                    animation: _fadeAnimation,
+                    builder: (context, child) {
+                      return FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Image.asset(
+                          'assets/images/illustrations/onboarding2.png',
+                          fit: BoxFit.contain,
+                          width: double.infinity,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                
+                SizedBox(height: screenHeight * 0.05), // 5% of screen height
 
-        // Welcome text with padding
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: AnimatedBuilder(
-            animation: _slideController,
-            builder: (context, child) {
-              return SlideTransition(
-                position: _slideAnimation,
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // "Ruang Aman Anda untuk Bersuara" with different colors
-                      RichText(
-                        text: const TextSpan(
+                // Welcome text with padding
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: AnimatedBuilder(
+                    animation: _slideController,
+                    builder: (context, child) {
+                      return SlideTransition(
+                        position: _slideAnimation,
+                        child: FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // "Ruang Aman Anda untuk Bersuara" with different colors
+                              RichText(
+                        text: TextSpan(
                           children: [
                             TextSpan(
                               text: 'Ruang Aman Anda untuk\n',
                               style: TextStyle(
-                                fontSize: 32,
+                                fontSize: screenHeight < 700 ? 24 : 32,
                                 fontWeight: FontWeight.w700,
                                 fontFamily: 'Poppins',
-                                color: Color(0xFF0068FF),
+                                color: const Color(0xFF0068FF),
                                 height: 1.2,
                               ),
                             ),
                             TextSpan(
                               text: 'Bersuara',
                               style: TextStyle(
-                                fontSize: 32,
+                                fontSize: screenHeight < 700 ? 24 : 32,
                                 fontWeight: FontWeight.w700,
                                 fontFamily: 'Poppins',
-                                color: Color(0xFFFFBB00),
+                                color: const Color(0xFFFFBB00),
                               ),
                             ),
                           ],
                         ),
                       ),
 
-                      const SizedBox(height: 16),
+                              SizedBox(height: screenHeight < 700 ? 12 : 16),
 
-                      // Description text
-                      const Text(
-                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'Poppins',
-                          color: Color(0xFFA2A2A2),
-                          height: 1.5,
+                              // Description text
+                              Text(
+                                'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud',
+                                style: TextStyle(
+                                  fontSize: screenHeight < 700 ? 14 : 16,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'Poppins',
+                                  color: const Color(0xFFA2A2A2),
+                                  height: 1.5,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
-              );
-            },
+                
+                SizedBox(height: screenHeight * 0.1), // 10% bottom spacing
+              ],
+            ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
