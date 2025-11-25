@@ -18,12 +18,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'PPKPT App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0068FF),
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFF1683FF), // Primary blue
+          secondary: Color(0xFF17C964), // Success green
+          error: Color(0xFFFF4D4F), // Danger red
+          surface: Color(0xFFF8F9FA),
           brightness: Brightness.light,
         ),
         useMaterial3: true,
-        scaffoldBackgroundColor: Colors.grey[50],
+        scaffoldBackgroundColor: const Color(0xFFF8F9FA),
         fontFamily: 'Poppins',
       ),
       home: const SplashPage(),
