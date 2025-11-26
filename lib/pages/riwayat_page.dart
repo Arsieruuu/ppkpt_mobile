@@ -54,7 +54,14 @@ class _RiwayatPageState extends State<RiwayatPage> {
           ),
         ),
       ),
-      body: Column(
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/backgrounds/background_page.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Column(
         children: [
           // Segmented Control
           Container(
@@ -88,6 +95,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
                       ),
           ),
         ],
+        ),
       ),
     );
   }
