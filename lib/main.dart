@@ -3,6 +3,7 @@ import 'pages/splash_page.dart';
 import 'pages/onboarding_screen.dart';
 import 'pages/beranda_page.dart';
 import 'pages/lapor_page.dart';
+import 'pages/pelaporan_page.dart';
 import 'pages/riwayat_page.dart';
 import 'pages/profile_page.dart';
 
@@ -33,6 +34,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/onboarding': (context) => const OnboardingScreen(),
         '/main': (context) => const MainNavigationPage(),
+        '/pelaporan': (context) => const PelaporanPage(),
       },
       debugShowCheckedModeBanner: false,
     );
