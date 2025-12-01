@@ -7,7 +7,8 @@ class DetailReportSelesaiPage extends StatefulWidget {
   const DetailReportSelesaiPage({super.key, required this.report});
 
   @override
-  State<DetailReportSelesaiPage> createState() => _DetailReportSelesaiPageState();
+  State<DetailReportSelesaiPage> createState() =>
+      _DetailReportSelesaiPageState();
 }
 
 class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
@@ -15,9 +16,7 @@ class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      body: SafeArea(
-        child: _buildDetailPage(),
-      ),
+      body: SafeArea(child: _buildDetailPage()),
     );
   }
 
@@ -74,7 +73,7 @@ class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
               ],
             ),
           ),
-          
+
           // Card wrapper from blue badge to illustration
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -82,10 +81,7 @@ class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(39),
-              border: Border.all(
-                color: const Color(0xFFE5E7EB),
-                width: 1,
-              ),
+              border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -98,9 +94,12 @@ class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
               children: [
                 // Blue Header Badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1683FF),
+                    color: const Color(0xFF0068FF),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
@@ -112,26 +111,26 @@ class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Timeline
                 _buildTimeline(),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Psikolog Card
                 _buildPsikologCard(),
-                
-                const SizedBox(height: 18),
-                
+
+                const SizedBox(height: 2),
+
                 // Illustration
                 _buildIllustrationSection(),
               ],
             ),
           ),
-          
-          const SizedBox(height: 20),
+
+          const SizedBox(height: 10),
         ],
       ),
     );
@@ -139,42 +138,42 @@ class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
 
   Widget _buildTimeline() {
     return Column(
-        children: [
-          _buildTimelineItem(
-            date: '24 Juni',
-            time: '17:45',
-            title: 'Laporan anda berhasil terkirim dan sedang di periksa',
-            icon: 'ic_loading',
-            isLast: false,
-          ),
-          _buildTimelineItem(
-            date: '24 Juni', 
-            time: '20:35',
-            title: 'Laporan anda telah terverifikasi oleh petugas',
-            icon: 'ic_verif',
-            isLast: false,
-          ),
-          _buildTimelineItem(
-            date: '25 Juni',
-            time: '09:40', 
-            title: 'Laporan anda sedang ditindak lanjuti oleh petugas PPKPT',
-            icon: 'ic_progress',
-            isLast: false,
-          ),
-          _buildTimelineItem(
-            date: '26 Juni',
-            time: '13:11',
-            title: 'Selesai',
-            icon: 'ic_done',
-            isLast: true,
-          ),
-        ],
-      );
+      children: [
+        _buildTimelineItem(
+          date: '24 Juni',
+          time: '17:45',
+          title: 'Laporan anda berhasil terkirim dan sedang di periksa',
+          icon: 'ic_loading',
+          isLast: false,
+        ),
+        _buildTimelineItem(
+          date: '24 Juni',
+          time: '20:35',
+          title: 'Laporan anda telah terverifikasi oleh petugas',
+          icon: 'ic_verif',
+          isLast: false,
+        ),
+        _buildTimelineItem(
+          date: '25 Juni',
+          time: '09:40',
+          title: 'Laporan anda sedang ditindak lanjuti oleh petugas PPKPT',
+          icon: 'ic_progress',
+          isLast: false,
+        ),
+        _buildTimelineItem(
+          date: '26 Juni',
+          time: '13:11',
+          title: 'Selesai',
+          icon: 'ic_done',
+          isLast: true,
+        ),
+      ],
+    );
   }
 
   Widget _buildTimelineItem({
     required String date,
-    required String time, 
+    required String time,
     required String title,
     required String icon,
     required bool isLast,
@@ -190,10 +189,7 @@ class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
             children: [
               Text(
                 date,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF6B7280),
-                ),
+                style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
               ),
               Text(
                 time,
@@ -206,9 +202,9 @@ class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
             ],
           ),
         ),
-        
+
         const SizedBox(width: 12),
-        
+
         // Timeline line and icon
         Column(
           children: [
@@ -218,10 +214,7 @@ class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFF1683FF),
-                  width: 2,
-                ),
+                border: Border.all(color: const Color(0xFF1683FF), width: 2),
               ),
               child: Center(
                 child: Image.asset(
@@ -232,16 +225,12 @@ class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
               ),
             ),
             if (!isLast)
-              Container(
-                width: 2,
-                height: 40,
-                color: const Color(0xFFE5E7EB),
-              ),
+              Container(width: 2, height: 40, color: const Color(0xFFE5E7EB)),
           ],
         ),
-        
+
         const SizedBox(width: 12),
-        
+
         // Content
         Expanded(
           child: Container(
@@ -265,10 +254,7 @@ class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
       decoration: BoxDecoration(
         color: const Color(0xFFF8F9FA),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: const Color(0xFFE5E7EB),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -317,7 +303,9 @@ class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundImage: const AssetImage('assets/images/profile/profile.png'),
+                  backgroundImage: const AssetImage(
+                    'assets/images/profile/profile.png',
+                  ),
                 ),
                 const SizedBox(width: 12),
                 const Expanded(
@@ -354,31 +342,14 @@ class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
   Widget _buildIllustrationSection() {
     return Container(
       height: 120,
-      decoration: BoxDecoration(
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(14)),
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
-        image: const DecorationImage(
-          image: AssetImage('assets/images/illustrations/illustration_card.png'),
+        child: Image.asset(
+          'assets/images/illustrations/illustration_card.png',
           fit: BoxFit.cover,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            offset: const Offset(0, 4),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1683FF).withOpacity(0.1),
-              const Color(0xFF17C964).withOpacity(0.1),
-            ],
-          ),
+          width: double.infinity,
+          height: 120,
         ),
       ),
     );
