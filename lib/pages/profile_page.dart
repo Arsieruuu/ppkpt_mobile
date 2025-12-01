@@ -9,6 +9,9 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
+      extendBody: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -25,6 +28,8 @@ class ProfilePage extends StatelessWidget {
         centerTitle: true,
       ),
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/backgrounds/background_page.png'),
@@ -32,7 +37,12 @@ class ProfilePage extends StatelessWidget {
           ),
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.only(
+            left: 24.0,
+            right: 24.0,
+            top: MediaQuery.of(context).padding.top + kToolbarHeight + 20,
+            bottom: 120.0, // Extra padding for bottom nav
+          ),
           child: Column(
             children: [
               const SizedBox(height: 20),
