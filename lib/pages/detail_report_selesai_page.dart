@@ -38,11 +38,29 @@ class _DetailReportSelesaiPageState extends State<DetailReportSelesaiPage> {
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Container(
-                    padding: const EdgeInsets.all(8),
-                    child: Image.asset(
-                      'assets/icons/back.png',
-                      width: 22,
-                      height: 22,
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.grey.withOpacity(0.3),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Image.asset(
+                        'assets/icons/back.png',
+                        width: 20,
+                        height: 20,
+                      ),
                     ),
                   ),
                 ),

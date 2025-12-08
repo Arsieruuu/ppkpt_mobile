@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/report.dart';
-import '../widgets/segmented_control.dart';
 import '../widgets/report_card.dart';
 
 class RiwayatPage extends StatefulWidget {
@@ -10,9 +9,21 @@ class RiwayatPage extends StatefulWidget {
   State<RiwayatPage> createState() => _RiwayatPageState();
 }
 
-class _RiwayatPageState extends State<RiwayatPage> {
-  int selectedTab = 0; // 0: Selesai, 1: Ditolak
+class _RiwayatPageState extends State<RiwayatPage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   // Data dummy
   final List<Report> reports = [
@@ -32,9 +43,12 @@ class _RiwayatPageState extends State<RiwayatPage> {
     ),
   ];
 
-  List<Report> get filteredReports {
-    final status = selectedTab == 0 ? ReportStatus.selesai : ReportStatus.ditolak;
-    return reports.where((report) => report.status == status).toList();
+  List<Report> get selesaiReports {
+    return reports.where((report) => report.status == ReportStatus.selesai).toList();
+  }
+
+  List<Report> get ditolakReports {
+    return reports.where((report) => report.status == ReportStatus.ditolak).toList();
   }
 
   @override
@@ -62,41 +76,76 @@ class _RiwayatPageState extends State<RiwayatPage> {
           ),
         ),
         child: Column(
-        children: [
-          // Segmented Control
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(16),
-            child: SegmentedControl(
-              selectedIndex: selectedTab,
-              onChanged: (index) {
-                setState(() {
-                  selectedTab = index;
-                });
-              },
+          children: [
+            // Tab Navigation
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.all(16),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  indicator: BoxDecoration(
+                    color: const Color(0xFF1683FF),
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.grey,
+                  labelStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  dividerColor: Colors.transparent,
+                  tabs: const [
+                    Tab(text: 'Selesai'),
+                    Tab(text: 'Ditolak'),
+                  ],
+                ),
+              ),
             ),
-          ),
-          // Content
-          Expanded(
-            child: isLoading
-                ? const LoadingWidget()
-                : filteredReports.isEmpty
-                    ? EmptyWidget(isSelesai: selectedTab == 0)
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: filteredReports.length,
-                        itemBuilder: (context, index) {
-                          final report = filteredReports[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: ReportCard(report: report),
-                          );
-                        },
-                      ),
-          ),
-        ],
+            // Content
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildReportList(selesaiReports, true),
+                  _buildReportList(ditolakReports, false),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildReportList(List<Report> reports, bool isSelesai) {
+    if (isLoading) {
+      return const LoadingWidget();
+    }
+
+    if (reports.isEmpty) {
+      return EmptyWidget(isSelesai: isSelesai);
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: reports.length,
+      itemBuilder: (context, index) {
+        final report = reports[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: ReportCard(report: report),
+        );
+      },
     );
   }
 }

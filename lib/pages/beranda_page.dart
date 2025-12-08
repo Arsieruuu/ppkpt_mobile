@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'notifikasi_page.dart';
 
 class BerandaPage extends StatelessWidget {
   const BerandaPage({super.key});
@@ -23,7 +24,7 @@ class BerandaPage extends StatelessWidget {
             // Header with SafeArea
             SafeArea(
               bottom: false,
-              child: _buildHeader(),
+              child: _buildHeader(context),
             ),
             
             // Scrollable Content
@@ -85,7 +86,7 @@ class BerandaPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       child: Row(
@@ -117,23 +118,33 @@ class BerandaPage extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotifikasiPage(),
                 ),
-              ],
-            ),
-            child: const Icon(
-              Icons.notifications_outlined,
-              color: Colors.grey,
+              );
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.notifications_outlined,
+                color: Colors.grey,
+              ),
             ),
           ),
         ],
