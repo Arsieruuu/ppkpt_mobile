@@ -218,9 +218,19 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                         ),
                         const SizedBox(height: 20),
 
+                        // TRPL Logo
+                        Image.asset(
+                          'assets/icons/trpl.png',
+                          height: 40,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                        const SizedBox(height: 12),
+
                         // Copyright text
                         const Text(
-                          '© 2025 PPKPT',
+                          '© 2025 TRPL POLINELA',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,

@@ -532,7 +532,7 @@ class _LaporPageState extends State<LaporPage> {
         TextField(
           controller: jenisKekerasanController,
           decoration: InputDecoration(
-            hintText: 'Tulis jenis kekerasa yang anda alami',
+            hintText: 'Tulis jenis kekerasan yang anda alami',
             hintStyle: const TextStyle(
               fontSize: 14,
               fontFamily: 'Poppins',
@@ -819,7 +819,7 @@ class _LaporPageState extends State<LaporPage> {
           },
         ),
         _buildRadioOption(
-          'Saya seorang saksi yang khwatir dengan keadaan korban',
+          'Saya seorang saksi yang khawatir dengan keadaan korban',
           alasanMelapor,
           (value) {
             setState(() {
