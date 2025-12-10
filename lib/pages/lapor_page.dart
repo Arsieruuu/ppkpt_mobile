@@ -755,7 +755,7 @@ class _LaporPageState extends State<LaporPage> {
         TextField(
           controller: jenisKekerasanController,
           decoration: InputDecoration(
-            hintText: 'Tulis jenis kekerasa yang anda alami',
+            hintText: 'Tulis jenis kekerasan yang anda alami',
             hintStyle: const TextStyle(
               fontSize: 14,
               fontFamily: 'Poppins',

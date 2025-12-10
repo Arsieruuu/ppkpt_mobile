@@ -43,7 +43,7 @@ class TentangAplikasiPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 40),
-              
+
               // Logo
               Container(
                 width: 128,
@@ -79,9 +79,9 @@ class TentangAplikasiPage extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // App Name
               const Text(
                 'E-Lapor PPKPT Polinela',
@@ -93,9 +93,9 @@ class TentangAplikasiPage extends StatelessWidget {
                   color: Color(0xFF0068FF),
                 ),
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               // Version
               const Text(
                 'Versi 1.0.0',
@@ -107,9 +107,9 @@ class TentangAplikasiPage extends StatelessWidget {
                   color: Colors.grey,
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Description
               Container(
                 padding: const EdgeInsets.all(20),
@@ -137,9 +137,9 @@ class TentangAplikasiPage extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 40),
-              
+
               // Development Team Section
               Container(
                 width: double.infinity,
@@ -168,9 +168,9 @@ class TentangAplikasiPage extends StatelessWidget {
                         color: Colors.black87,
                       ),
                     ),
-                    
+
                     SizedBox(height: 16),
-                    
+
                     Text(
                       'Tim Static\nTeknologi Rekayasa Perangkat Lunak',
                       style: TextStyle(
@@ -184,21 +184,21 @@ class TentangAplikasiPage extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 40),
-              
+
               // Copyright
               const Text(
-                'Hak Cipta ©2025 Politeknik Ngeri Lampung',
+                'Hak Cipta ©2025 Team Ohyme x PPKPT POLINELA',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'Poppins',
                   color: Color(0xFF1E90FF),
                 ),
               ),
-              
+
               const SizedBox(height: 40),
             ],
           ),

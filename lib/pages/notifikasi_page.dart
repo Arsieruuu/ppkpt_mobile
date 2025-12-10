@@ -10,6 +10,7 @@ class NotifikasiPage extends StatefulWidget {
 
 class _NotifikasiPageState extends State<NotifikasiPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  String selectedFilter = 'Semua'; // Filter state: Semua, Hari Ini, Minggu Ini, Bulan Ini
 
   @override
   void initState() {
@@ -104,6 +105,89 @@ class _NotifikasiPageState extends State<NotifikasiPage> with SingleTickerProvid
               ],
             ),
           ),
+          // Filter button
+          Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                PopupMenuButton<String>(
+                  icon: Image.asset(
+                    'assets/icons/ic_filter.png',
+                    width: 24,
+                    height: 24,
+                  ),
+                  offset: const Offset(0, 40),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  onSelected: (String value) {
+                    setState(() {
+                      selectedFilter = value;
+                    });
+                  },
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      value: 'Semua',
+                      child: Row(
+                        children: [
+                          Icon(
+                            selectedFilter == 'Semua' ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                            color: const Color(0xFF0068FF),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          const Text('Semua'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'Hari Ini',
+                      child: Row(
+                        children: [
+                          Icon(
+                            selectedFilter == 'Hari Ini' ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                            color: const Color(0xFF0068FF),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          const Text('Hari Ini'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'Minggu Ini',
+                      child: Row(
+                        children: [
+                          Icon(
+                            selectedFilter == 'Minggu Ini' ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                            color: const Color(0xFF0068FF),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          const Text('Minggu Ini'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'Bulan Ini',
+                      child: Row(
+                        children: [
+                          Icon(
+                            selectedFilter == 'Bulan Ini' ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                            color: const Color(0xFF0068FF),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          const Text('Bulan Ini'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -120,7 +204,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> with SingleTickerProvid
 
   Widget _buildSemuaTab() {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 5, bottom: 16),
       children: [
         _buildNotificationCard(
           icon: Icons.assignment_outlined,

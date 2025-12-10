@@ -9,9 +9,12 @@ class RiwayatPage extends StatefulWidget {
   State<RiwayatPage> createState() => _RiwayatPageState();
 }
 
-class _RiwayatPageState extends State<RiwayatPage> with SingleTickerProviderStateMixin {
+class _RiwayatPageState extends State<RiwayatPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool isLoading = false;
+  String selectedFilter =
+      'Semua'; // Filter state: Semua, Hari Ini, Minggu Ini, Bulan Ini
 
   @override
   void initState() {
@@ -64,19 +67,65 @@ class _RiwayatPageState extends State<RiwayatPage> with SingleTickerProviderStat
     ),
   ];
 
+  List<Report> _filterByDate(List<Report> reports) {
+    final now = DateTime.now();
+
+    switch (selectedFilter) {
+      case 'Hari Ini':
+        return reports
+            .where(
+              (report) =>
+                  report.date.year == now.year &&
+                  report.date.month == now.month &&
+                  report.date.day == now.day,
+            )
+            .toList();
+
+      case 'Minggu Ini':
+        final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+        return reports
+            .where(
+              (report) => report.date.isAfter(
+                startOfWeek.subtract(const Duration(days: 1)),
+              ),
+            )
+            .toList();
+
+      case 'Bulan Ini':
+        return reports
+            .where(
+              (report) =>
+                  report.date.year == now.year &&
+                  report.date.month == now.month,
+            )
+            .toList();
+
+      default: // Semua
+        return reports;
+    }
+  }
+
   List<Report> get progressReports {
-    return allReports.where((report) => 
-      report.status == ReportStatus.dalamProses ||
-      report.status == ReportStatus.verifikasi ||
-      report.status == ReportStatus.prosesLanjutan
-    ).toList();
+    final filtered = allReports
+        .where(
+          (report) =>
+              report.status == ReportStatus.dalamProses ||
+              report.status == ReportStatus.verifikasi ||
+              report.status == ReportStatus.prosesLanjutan,
+        )
+        .toList();
+    return _filterByDate(filtered);
   }
 
   List<Report> get completedReports {
-    return allReports.where((report) => 
-      report.status == ReportStatus.selesai ||
-      report.status == ReportStatus.ditolak
-    ).toList();
+    final filtered = allReports
+        .where(
+          (report) =>
+              report.status == ReportStatus.selesai ||
+              report.status == ReportStatus.ditolak,
+        )
+        .toList();
+    return _filterByDate(filtered);
   }
 
   @override
@@ -139,6 +188,99 @@ class _RiwayatPageState extends State<RiwayatPage> with SingleTickerProviderStat
                 ),
               ),
             ),
+            // Filter button
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  PopupMenuButton<String>(
+                    icon: Image.asset(
+                      'assets/icons/ic_filter.png',
+                      width: 24,
+                      height: 24,
+                    ),
+                    offset: const Offset(0, 40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    onSelected: (String value) {
+                      setState(() {
+                        selectedFilter = value;
+                      });
+                    },
+                    itemBuilder: (BuildContext context) =>
+                        <PopupMenuEntry<String>>[
+                          PopupMenuItem<String>(
+                            value: 'Semua',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  selectedFilter == 'Semua'
+                                      ? Icons.radio_button_checked
+                                      : Icons.radio_button_unchecked,
+                                  color: const Color(0xFF0068FF),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                const Text('Semua'),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'Hari Ini',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  selectedFilter == 'Hari Ini'
+                                      ? Icons.radio_button_checked
+                                      : Icons.radio_button_unchecked,
+                                  color: const Color(0xFF0068FF),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                const Text('Hari Ini'),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'Minggu Ini',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  selectedFilter == 'Minggu Ini'
+                                      ? Icons.radio_button_checked
+                                      : Icons.radio_button_unchecked,
+                                  color: const Color(0xFF0068FF),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                const Text('Minggu Ini'),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'Bulan Ini',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  selectedFilter == 'Bulan Ini'
+                                      ? Icons.radio_button_checked
+                                      : Icons.radio_button_unchecked,
+                                  color: const Color(0xFF0068FF),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                const Text('Bulan Ini'),
+                              ],
+                            ),
+                          ),
+                        ],
+                  ),
+                ],
+              ),
+            ),
             // Content
             Expanded(
               child: TabBarView(
@@ -165,7 +307,7 @@ class _RiwayatPageState extends State<RiwayatPage> with SingleTickerProviderStat
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
       itemCount: reports.length,
       itemBuilder: (context, index) {
         final report = reports[index];
@@ -250,20 +392,13 @@ class EmptyWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.folder_open,
-            size: 64,
-            color: Color(0xFF6D6D6D),
-          ),
+          const Icon(Icons.folder_open, size: 64, color: Color(0xFF6D6D6D)),
           const SizedBox(height: 16),
           Text(
-            isProgress 
+            isProgress
                 ? 'Belum ada laporan dalam progress'
                 : 'Belum ada laporan selesai atau ditolak',
-            style: const TextStyle(
-              color: Color(0xFF6D6D6D),
-              fontSize: 16,
-            ),
+            style: const TextStyle(color: Color(0xFF6D6D6D), fontSize: 16),
           ),
         ],
       ),
