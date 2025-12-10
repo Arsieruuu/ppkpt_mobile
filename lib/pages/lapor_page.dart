@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'laporan_success_page.dart';
+import 'login_page.dart';
+import '../services/auth_service.dart';
+import '../services/laporan_service.dart';
 
 class LaporPage extends StatefulWidget {
   const LaporPage({super.key});
@@ -9,12 +12,22 @@ class LaporPage extends StatefulWidget {
 }
 
 class _LaporPageState extends State<LaporPage> {
+  final AuthService _authService = AuthService();
+  final LaporanService _laporanService = LaporanService();
+  bool _isLoading = true;
+  bool _isLoggedIn = false;
+  bool _isSubmitting = false;
   int currentStep = 0;
 
   // Data Diri Controllers
   final TextEditingController namaController = TextEditingController();
   final TextEditingController teleponController = TextEditingController();
   final TextEditingController domisiliController = TextEditingController();
+  final TextEditingController tanggalKejadianController =
+      TextEditingController();
+
+  // Data Diri State
+  DateTime? tanggalKejadian;
 
   // Kronologi Controllers
   final TextEditingController jenisKekerasanController =
@@ -31,10 +44,34 @@ class _LaporPageState extends State<LaporPage> {
   String? pendampingan;
 
   @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final isLoggedIn = await _authService.isLoggedIn();
+
+    setState(() {
+      _isLoggedIn = isLoggedIn;
+      _isLoading = false;
+    });
+
+    // Jika belum login, redirect ke login page
+    if (!isLoggedIn && mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    }
+  }
+
+  @override
   void dispose() {
     namaController.dispose();
     teleponController.dispose();
     domisiliController.dispose();
+    tanggalKejadianController.dispose();
     jenisKekerasanController.dispose();
     ceritaPeristiwaController.dispose();
     alasanLainController.dispose();
@@ -43,6 +80,30 @@ class _LaporPageState extends State<LaporPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Show loading while checking login status
+    if (_isLoading) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage(
+                'assets/images/backgrounds/background_page.png',
+              ),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(color: Color(0xFF1683FF)),
+          ),
+        ),
+      );
+    }
+
+    // Only show form if logged in (redirect will happen in initState if not)
+    if (!_isLoggedIn) {
+      return const SizedBox.shrink();
+    }
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -55,17 +116,50 @@ class _LaporPageState extends State<LaporPage> {
           child: Column(
             children: [
               // Header
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                child: Text(
-                  'Formulir Pelaporan',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Poppins',
-                    color: Colors.black87,
-                  ),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back_ios_new,
+                          color: Colors.black87,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                    const Expanded(
+                      child: Text(
+                        'Formurlir Pelaporan',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Poppins',
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 50),
+                  ],
                 ),
               ),
 
@@ -104,37 +198,74 @@ class _LaporPageState extends State<LaporPage> {
               // Bottom Buttons
               Padding(
                 padding: const EdgeInsets.all(24),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (currentStep < 2) {
-                        setState(() {
-                          currentStep++;
-                        });
-                      } else {
-                        // Show confirmation dialog
-                        _showConfirmationDialog();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0066FF),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                child: Row(
+                  children: [
+                    if (currentStep > 0)
+                      Expanded(
+                        child: SizedBox(
+                          height: 56,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              setState(() {
+                                currentStep--;
+                              });
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(
+                                color: Color(0xFF0066FF),
+                                width: 1.5,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text(
+                              'Kembali',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: 'Poppins',
+                                color: Color(0xFF0066FF),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      currentStep == 2 ? 'Kirim' : 'Berikutnya',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Poppins',
-                        color: Colors.white,
+                    if (currentStep > 0) const SizedBox(width: 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (currentStep < 2) {
+                              setState(() {
+                                currentStep++;
+                              });
+                            } else {
+                              // Show confirmation dialog
+                              _showConfirmationDialog();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0066FF),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            currentStep == 2 ? 'Kirim' : 'Berikutnya',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Poppins',
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ],
@@ -163,51 +294,44 @@ class _LaporPageState extends State<LaporPage> {
     bool isCurrent = stepNumber == currentStep + 1;
 
     return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            currentStep = stepNumber - 1;
-          });
-        },
-        child: Column(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: isCurrent ? const Color(0xFF0066FF) : Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isCurrent
-                      ? const Color(0xFF0066FF)
-                      : const Color(0xFFE0E0E0),
-                  width: 2,
-                ),
+      child: Column(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isCurrent ? const Color(0xFF0066FF) : Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isCurrent
+                    ? const Color(0xFF0066FF)
+                    : const Color(0xFFE0E0E0),
+                width: 2,
               ),
-              child: Center(
-                child: Text(
-                  stepNumber.toString(),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Poppins',
-                    color: isCurrent ? Colors.white : const Color(0xFF9E9E9E),
-                  ),
+            ),
+            child: Center(
+              child: Text(
+                stepNumber.toString(),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Poppins',
+                  color: isCurrent ? Colors.white : const Color(0xFF9E9E9E),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal,
-                fontFamily: 'Poppins',
-                color: isCurrent ? Colors.black87 : const Color(0xFF9E9E9E),
-              ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal,
+              fontFamily: 'Poppins',
+              color: isCurrent ? Colors.black87 : const Color(0xFF9E9E9E),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -480,6 +604,105 @@ class _LaporPageState extends State<LaporPage> {
             color: Color(0xFF9E9E9E),
           ),
         ),
+        const SizedBox(height: 24),
+
+        // Tanggal Kejadian
+        RichText(
+          text: const TextSpan(
+            text: 'Tanggal Kejadian',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
+              color: Colors.black87,
+            ),
+            children: [
+              TextSpan(
+                text: '*',
+                style: TextStyle(color: Colors.red),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: tanggalKejadianController,
+          readOnly: true,
+          onTap: () async {
+            final DateTime? picked = await showDatePicker(
+              context: context,
+              initialDate: tanggalKejadian ?? DateTime.now(),
+              firstDate: DateTime(2000),
+              lastDate: DateTime.now(),
+              builder: (context, child) {
+                return Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: const ColorScheme.light(
+                      primary: Color(0xFF0066FF),
+                      onPrimary: Colors.white,
+                      onSurface: Colors.black87,
+                    ),
+                  ),
+                  child: child!,
+                );
+              },
+            );
+            if (picked != null) {
+              setState(() {
+                tanggalKejadian = picked;
+                tanggalKejadianController.text =
+                    '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
+              });
+            }
+          },
+          decoration: InputDecoration(
+            hintText: 'Pilih tanggal kejadian',
+            hintStyle: const TextStyle(
+              fontSize: 14,
+              fontFamily: 'Poppins',
+              color: Color(0xFFBDBDBD),
+            ),
+            suffixIcon: const Icon(
+              Icons.calendar_today,
+              color: Color(0xFF0066FF),
+              size: 20,
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Color(0xFF0066FF),
+                width: 1.5,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Color(0xFF0066FF),
+                width: 1.5,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF0066FF), width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
+          ),
+          style: const TextStyle(fontSize: 14, fontFamily: 'Poppins'),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Pilih tanggal saat kejadian terjadi',
+          style: TextStyle(
+            fontSize: 12,
+            fontFamily: 'Poppins',
+            color: Color(0xFF9E9E9E),
+          ),
+        ),
         const SizedBox(height: 32),
       ],
     );
@@ -732,12 +955,12 @@ class _LaporPageState extends State<LaporPage> {
           ),
         ),
         const SizedBox(height: 12),
-        _buildRadioOption('Ya', disabilitas, (value) {
+        _buildRadioOption('YA', disabilitas, (value) {
           setState(() {
             disabilitas = value;
           });
         }),
-        _buildRadioOption('Tidak', disabilitas, (value) {
+        _buildRadioOption('TIDAK', disabilitas, (value) {
           setState(() {
             disabilitas = value;
           });
@@ -768,12 +991,12 @@ class _LaporPageState extends State<LaporPage> {
             statusTerlapor = value;
           });
         }),
-        _buildRadioOption('Pendidik (Dosen)', statusTerlapor, (value) {
+        _buildRadioOption('Pendidik', statusTerlapor, (value) {
           setState(() {
             statusTerlapor = value;
           });
         }),
-        _buildRadioOption('Staff / Teknisi', statusTerlapor, (value) {
+        _buildRadioOption('Staff/Teknisi', statusTerlapor, (value) {
           setState(() {
             statusTerlapor = value;
           });
@@ -819,7 +1042,7 @@ class _LaporPageState extends State<LaporPage> {
           },
         ),
         _buildRadioOption(
-          'Saya seorang saksi yang khwatir dengan keadaan korban',
+          'Saya seorang saksi yang khawatir dengan keadaan korban',
           alasanMelapor,
           (value) {
             setState(() {
@@ -836,6 +1059,11 @@ class _LaporPageState extends State<LaporPage> {
             });
           },
         ),
+        _buildRadioOption('Warga Kampus', alasanMelapor, (value) {
+          setState(() {
+            alasanMelapor = value;
+          });
+        }),
         _buildRadioOption('Lainnya', alasanMelapor, (value) {
           setState(() {
             alasanMelapor = value;
@@ -904,12 +1132,12 @@ class _LaporPageState extends State<LaporPage> {
           ),
         ),
         const SizedBox(height: 12),
-        _buildRadioOption('Ya', pendampingan, (value) {
+        _buildRadioOption('YA', pendampingan, (value) {
           setState(() {
             pendampingan = value;
           });
         }),
-        _buildRadioOption('Tidak', pendampingan, (value) {
+        _buildRadioOption('TIDAK', pendampingan, (value) {
           setState(() {
             pendampingan = value;
           });
@@ -925,14 +1153,19 @@ class _LaporPageState extends State<LaporPage> {
     Function(String?) onChanged,
   ) {
     return InkWell(
-      onTap: () => onChanged(title),
+      onTap: () {
+        print('Radio button clicked: $title'); // Debug
+        onChanged(title);
+      },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               width: 24,
               height: 24,
+              margin: const EdgeInsets.only(top: 2),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -959,10 +1192,12 @@ class _LaporPageState extends State<LaporPage> {
             Expanded(
               child: Text(
                 title,
+                softWrap: true,
                 style: const TextStyle(
                   fontSize: 14,
                   fontFamily: 'Poppins',
                   color: Colors.black87,
+                  height: 1.4,
                 ),
               ),
             ),
@@ -1054,6 +1289,11 @@ class _LaporPageState extends State<LaporPage> {
               _buildPreviewField('Nomer Telepon', teleponController.text),
               const SizedBox(height: 16),
               _buildPreviewField('Domisili', domisiliController.text),
+              const SizedBox(height: 16),
+              _buildPreviewField(
+                'Tanggal Kejadian',
+                tanggalKejadianController.text,
+              ),
             ],
           ),
         ),
@@ -1202,8 +1442,8 @@ class _LaporPageState extends State<LaporPage> {
                 ),
               ),
               Icon(
-                pendampingan == 'Ya' ? Icons.check_circle : Icons.cancel,
-                color: pendampingan == 'Ya'
+                pendampingan == 'YA' ? Icons.check_circle : Icons.cancel,
+                color: pendampingan == 'YA'
                     ? const Color(0xFF2196F3)
                     : const Color(0xFF6D6D6D),
                 size: 24,
@@ -1279,17 +1519,12 @@ class _LaporPageState extends State<LaporPage> {
                       child: SizedBox(
                         height: 56,
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            // Navigate to success page
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const LaporanSuccessPage(),
-                              ),
-                            );
-                          },
+                          onPressed: _isSubmitting
+                              ? null
+                              : () async {
+                                  Navigator.pop(context); // Close dialog
+                                  await _submitLaporan();
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF0066FF),
                             shape: RoundedRectangleBorder(
@@ -1297,15 +1532,26 @@ class _LaporPageState extends State<LaporPage> {
                             ),
                             elevation: 0,
                           ),
-                          child: const Text(
-                            'Kirim',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'Poppins',
-                              color: Colors.white,
-                            ),
-                          ),
+                          child: _isSubmitting
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : const Text(
+                                  'Kirim',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: 'Poppins',
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
                       ),
                     ),
@@ -1317,6 +1563,88 @@ class _LaporPageState extends State<LaporPage> {
         );
       },
     );
+  }
+
+  Future<void> _submitLaporan() async {
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      // Format tanggal ke format YYYY-MM-DD untuk database
+      String tanggalFormatted = '';
+      if (tanggalKejadian != null) {
+        tanggalFormatted =
+            '${tanggalKejadian!.year}-${tanggalKejadian!.month.toString().padLeft(2, '0')}-${tanggalKejadian!.day.toString().padLeft(2, '0')}';
+      }
+
+      // Debug print untuk cek data sebelum dikirim
+      print('=== DATA LAPORAN YANG AKAN DIKIRIM ===');
+      print('Nama: ${namaController.text}');
+      print('Nomor Telepon: ${teleponController.text}');
+      print('Domisili: ${domisiliController.text}');
+      print('Tanggal: $tanggalFormatted');
+      print('Jenis Kekerasan: ${jenisKekerasanController.text}');
+      print('Cerita Peristiwa: ${ceritaPeristiwaController.text}');
+      print('Disabilitas: $disabilitas');
+      print('Status Terlapor: $statusTerlapor');
+      print('Alasan Melapor: $alasanMelapor');
+      print('Pendampingan: $pendampingan');
+      print('=====================================');
+
+      final result = await _laporanService.submitLaporan(
+        nama: namaController.text,
+        nomorTelepon: teleponController.text,
+        domisili: domisiliController.text,
+        tanggal: tanggalFormatted,
+        jenisKekerasan: jenisKekerasanController.text,
+        ceritaPeristiwa: ceritaPeristiwaController.text,
+        pelampiran_bukti: buktiFileName.isNotEmpty ? buktiFileName : null,
+        disabilitas: disabilitas,
+        statusPelapor: statusTerlapor,
+        alasan: alasanMelapor,
+        alasanLainnya: alasanMelapor == 'Lainnya'
+            ? alasanLainController.text
+            : null,
+        pendampingan: pendampingan,
+      );
+
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      if (result['success'] == true) {
+        if (mounted) {
+          // Navigate to success page tanpa SnackBar
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LaporanSuccessPage()),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Gagal mengirim laporan'),
+              backgroundColor: const Color(0xFFFF4D4F),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: const Color(0xFFFF4D4F),
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildPreviewField(
