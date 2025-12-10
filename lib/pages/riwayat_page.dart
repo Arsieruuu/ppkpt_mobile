@@ -26,7 +26,28 @@ class _RiwayatPageState extends State<RiwayatPage> with SingleTickerProviderStat
   }
 
   // Data dummy
-  final List<Report> reports = [
+  final List<Report> allReports = [
+    Report(
+      id: 'LP-001234KV',
+      title: 'Kekerasan Verbal',
+      time: '17.45',
+      date: DateTime(2025, 6, 24),
+      status: ReportStatus.dalamProses,
+    ),
+    Report(
+      id: 'LP-001234KV',
+      title: 'Kekerasan Verbal',
+      time: '20.35',
+      date: DateTime(2025, 6, 24),
+      status: ReportStatus.verifikasi,
+    ),
+    Report(
+      id: 'LP-001234KV',
+      title: 'Kekerasan Verbal',
+      time: '09.40',
+      date: DateTime(2025, 6, 25),
+      status: ReportStatus.prosesLanjutan,
+    ),
     Report(
       id: 'LP-078957KS',
       title: 'Kekerasan Seksual',
@@ -35,7 +56,7 @@ class _RiwayatPageState extends State<RiwayatPage> with SingleTickerProviderStat
       status: ReportStatus.selesai,
     ),
     Report(
-      id: 'LP-123456AB',
+      id: 'LP-123456KF',
       title: 'Kekerasan Fisik',
       time: '14.30',
       date: DateTime(2025, 6, 23),
@@ -43,12 +64,19 @@ class _RiwayatPageState extends State<RiwayatPage> with SingleTickerProviderStat
     ),
   ];
 
-  List<Report> get selesaiReports {
-    return reports.where((report) => report.status == ReportStatus.selesai).toList();
+  List<Report> get progressReports {
+    return allReports.where((report) => 
+      report.status == ReportStatus.dalamProses ||
+      report.status == ReportStatus.verifikasi ||
+      report.status == ReportStatus.prosesLanjutan
+    ).toList();
   }
 
-  List<Report> get ditolakReports {
-    return reports.where((report) => report.status == ReportStatus.ditolak).toList();
+  List<Report> get completedReports {
+    return allReports.where((report) => 
+      report.status == ReportStatus.selesai ||
+      report.status == ReportStatus.ditolak
+    ).toList();
   }
 
   @override
@@ -89,7 +117,7 @@ class _RiwayatPageState extends State<RiwayatPage> with SingleTickerProviderStat
                 child: TabBar(
                   controller: _tabController,
                   indicator: BoxDecoration(
-                    color: const Color(0xFF1683FF),
+                    color: const Color(0xFF0068FF),
                     borderRadius: BorderRadius.circular(25),
                   ),
                   labelColor: Colors.white,
@@ -105,8 +133,8 @@ class _RiwayatPageState extends State<RiwayatPage> with SingleTickerProviderStat
                   indicatorSize: TabBarIndicatorSize.tab,
                   dividerColor: Colors.transparent,
                   tabs: const [
-                    Tab(text: 'Selesai'),
-                    Tab(text: 'Ditolak'),
+                    Tab(text: 'Progress'),
+                    Tab(text: 'Selesai & Ditolak'),
                   ],
                 ),
               ),
@@ -116,8 +144,8 @@ class _RiwayatPageState extends State<RiwayatPage> with SingleTickerProviderStat
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildReportList(selesaiReports, true),
-                  _buildReportList(ditolakReports, false),
+                  _buildReportList(progressReports, true),
+                  _buildReportList(completedReports, false),
                 ],
               ),
             ),
@@ -127,13 +155,13 @@ class _RiwayatPageState extends State<RiwayatPage> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildReportList(List<Report> reports, bool isSelesai) {
+  Widget _buildReportList(List<Report> reports, bool isProgress) {
     if (isLoading) {
       return const LoadingWidget();
     }
 
     if (reports.isEmpty) {
-      return EmptyWidget(isSelesai: isSelesai);
+      return EmptyWidget(isProgress: isProgress);
     }
 
     return ListView.builder(
@@ -212,9 +240,9 @@ class LoadingWidget extends StatelessWidget {
 
 // Empty Widget
 class EmptyWidget extends StatelessWidget {
-  final bool isSelesai;
+  final bool isProgress;
 
-  const EmptyWidget({super.key, required this.isSelesai});
+  const EmptyWidget({super.key, required this.isProgress});
 
   @override
   Widget build(BuildContext context) {
@@ -229,9 +257,9 @@ class EmptyWidget extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            isSelesai 
-                ? 'Belum ada laporan selesai'
-                : 'Belum ada laporan ditolak',
+            isProgress 
+                ? 'Belum ada laporan dalam progress'
+                : 'Belum ada laporan selesai atau ditolak',
             style: const TextStyle(
               color: Color(0xFF6D6D6D),
               fontSize: 16,

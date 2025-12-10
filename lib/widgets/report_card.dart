@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/report.dart';
 import '../pages/detail_laporan_page.dart';
 import '../pages/detail_report_selesai_page.dart';
+import '../pages/detail_progress_page.dart';
 import 'status_badge.dart';
 
 // Report Card Component untuk menampilkan kartu laporan
@@ -15,11 +16,20 @@ class ReportCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         // Navigate to appropriate detail page based on status
-        if (report.status == ReportStatus.selesai) {
+        if (report.status == ReportStatus.selesai || report.status == ReportStatus.ditolak) {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => DetailReportSelesaiPage(report: report),
+            ),
+          );
+        } else if (report.status == ReportStatus.dalamProses || 
+                   report.status == ReportStatus.verifikasi || 
+                   report.status == ReportStatus.prosesLanjutan) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailProgressPage(report: report),
             ),
           );
         } else {

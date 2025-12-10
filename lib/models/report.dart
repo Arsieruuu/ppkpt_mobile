@@ -15,4 +15,10 @@ class Report {
   });
 }
 
-enum ReportStatus { selesai, ditolak }
+enum ReportStatus { 
+  dalamProses, 
+  verifikasi, 
+  prosesLanjutan, 
+  selesai, 
+  ditolak 
+}

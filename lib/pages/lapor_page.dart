@@ -55,50 +55,17 @@ class _LaporPageState extends State<LaporPage> {
           child: Column(
             children: [
               // Header
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back_ios_new,
-                          color: Colors.black87,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                    const Expanded(
-                      child: Text(
-                        'Formurlir Pelaporan',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Poppins',
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 50),
-                  ],
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Text(
+                  'Formulir Pelaporan',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Poppins',
+                    color: Colors.black87,
+                  ),
                 ),
               ),
 
@@ -137,74 +104,37 @@ class _LaporPageState extends State<LaporPage> {
               // Bottom Buttons
               Padding(
                 padding: const EdgeInsets.all(24),
-                child: Row(
-                  children: [
-                    if (currentStep > 0)
-                      Expanded(
-                        child: SizedBox(
-                          height: 56,
-                          child: OutlinedButton(
-                            onPressed: () {
-                              setState(() {
-                                currentStep--;
-                              });
-                            },
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(
-                                color: Color(0xFF0066FF),
-                                width: 1.5,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: const Text(
-                              'Kembali',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: 'Poppins',
-                                color: Color(0xFF0066FF),
-                              ),
-                            ),
-                          ),
-                        ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (currentStep < 2) {
+                        setState(() {
+                          currentStep++;
+                        });
+                      } else {
+                        // Show confirmation dialog
+                        _showConfirmationDialog();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0066FF),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                    if (currentStep > 0) const SizedBox(width: 12),
-                    Expanded(
-                      child: SizedBox(
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (currentStep < 2) {
-                              setState(() {
-                                currentStep++;
-                              });
-                            } else {
-                              // Show confirmation dialog
-                              _showConfirmationDialog();
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0066FF),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: Text(
-                            currentStep == 2 ? 'Kirim' : 'Berikutnya',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'Poppins',
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      currentStep == 2 ? 'Kirim' : 'Berikutnya',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Poppins',
+                        color: Colors.white,
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -233,44 +163,51 @@ class _LaporPageState extends State<LaporPage> {
     bool isCurrent = stepNumber == currentStep + 1;
 
     return Expanded(
-      child: Column(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: isCurrent ? const Color(0xFF0066FF) : Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isCurrent
-                    ? const Color(0xFF0066FF)
-                    : const Color(0xFFE0E0E0),
-                width: 2,
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            currentStep = stepNumber - 1;
+          });
+        },
+        child: Column(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isCurrent ? const Color(0xFF0066FF) : Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isCurrent
+                      ? const Color(0xFF0066FF)
+                      : const Color(0xFFE0E0E0),
+                  width: 2,
+                ),
               ),
-            ),
-            child: Center(
-              child: Text(
-                stepNumber.toString(),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Poppins',
-                  color: isCurrent ? Colors.white : const Color(0xFF9E9E9E),
+              child: Center(
+                child: Text(
+                  stepNumber.toString(),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Poppins',
+                    color: isCurrent ? Colors.white : const Color(0xFF9E9E9E),
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal,
-              fontFamily: 'Poppins',
-              color: isCurrent ? Colors.black87 : const Color(0xFF9E9E9E),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal,
+                fontFamily: 'Poppins',
+                color: isCurrent ? Colors.black87 : const Color(0xFF9E9E9E),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

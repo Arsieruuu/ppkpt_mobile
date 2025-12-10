@@ -9,11 +9,43 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCompleted = status == ReportStatus.selesai;
-    final color = isCompleted ? const Color(0xFF17C964) : const Color(0xFFFF4D4F);
-    final bgColor = color.withOpacity(0.15);
-    final text = isCompleted ? 'Selesai' : 'Ditolak';
-    final iconPath = isCompleted ? 'assets/icons/ic_done.png' : 'assets/icons/ic_deny.png';
+    Color color;
+    Color bgColor;
+    String text;
+    IconData icon;
+
+    switch (status) {
+      case ReportStatus.dalamProses:
+        color = const Color(0xFF9E9E9E);
+        bgColor = color.withOpacity(0.15);
+        text = 'Dalam Proses';
+        icon = Icons.hourglass_empty;
+        break;
+      case ReportStatus.verifikasi:
+        color = const Color(0xFFFFA500);
+        bgColor = color.withOpacity(0.15);
+        text = 'Verifikasi';
+        icon = Icons.verified_outlined;
+        break;
+      case ReportStatus.prosesLanjutan:
+        color = const Color(0xFF2196F3);
+        bgColor = color.withOpacity(0.15);
+        text = 'Proses Lanjutan';
+        icon = Icons.autorenew;
+        break;
+      case ReportStatus.selesai:
+        color = const Color(0xFF17C964);
+        bgColor = color.withOpacity(0.15);
+        text = 'Selesai';
+        icon = Icons.check_circle_outline;
+        break;
+      case ReportStatus.ditolak:
+        color = const Color(0xFFFF4D4F);
+        bgColor = color.withOpacity(0.15);
+        text = 'Ditolak';
+        icon = Icons.cancel_outlined;
+        break;
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -24,10 +56,10 @@ class StatusBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(
-            iconPath,
-            width: 12,
-            height: 12,
+          Icon(
+            icon,
+            size: 12,
+            color: color,
           ),
           const SizedBox(width: 4),
           Text(
