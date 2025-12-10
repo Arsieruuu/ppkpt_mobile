@@ -3,6 +3,7 @@ import '../models/report.dart';
 import '../pages/detail_laporan_page.dart';
 import '../pages/detail_report_selesai_page.dart';
 import '../pages/detail_progress_page.dart';
+import '../pages/detail_laporan_ditolak_page.dart';
 import 'status_badge.dart';
 
 // Report Card Component untuk menampilkan kartu laporan
@@ -16,11 +17,18 @@ class ReportCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         // Navigate to appropriate detail page based on status
-        if (report.status == ReportStatus.selesai || report.status == ReportStatus.ditolak) {
+        if (report.status == ReportStatus.selesai) {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => DetailReportSelesaiPage(report: report),
+            ),
+          );
+        } else if (report.status == ReportStatus.ditolak) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailLaporanDitolakPage(report: report),
             ),
           );
         } else if (report.status == ReportStatus.dalamProses || 

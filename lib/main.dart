@@ -6,6 +6,7 @@ import 'pages/lapor_page.dart';
 import 'pages/pelaporan_page.dart';
 import 'pages/riwayat_page.dart';
 import 'pages/profile_page.dart';
+import 'pages/login_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -52,6 +53,7 @@ class MainNavigationPage extends StatefulWidget {
 
 class _MainNavigationPageState extends State<MainNavigationPage> {
   late int _currentIndex;
+  bool isLoggedIn = false; // Simulated login status
 
   @override
   void initState() {
@@ -136,9 +138,14 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     final isSelected = _currentIndex == index;
     return GestureDetector(
       onTap: () {
-        setState(() {
-          _currentIndex = index;
-        });
+        // Check if trying to access Lapor page without login
+        if (index == 1 && !isLoggedIn) {
+          _showLoginPromptDialog();
+        } else {
+          setState(() {
+            _currentIndex = index;
+          });
+        }
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
@@ -174,6 +181,106 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showLoginPromptDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Sad emoji
+                const Text(
+                  '😞',
+                  style: TextStyle(fontSize: 64),
+                ),
+                const SizedBox(height: 16),
+                // Message
+                const Text(
+                  'Yah kamu belum login',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Kamu harus login terlebih dahulu untuk mengakses fitur pelaporan',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF666666),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                // Login button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(context); // Close dialog
+                      // Navigate to login page
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginPage(),
+                        ),
+                      );
+                      // If login successful, navigate to Lapor page
+                      if (result == true && mounted) {
+                        setState(() {
+                          isLoggedIn = true;
+                          _currentIndex = 1; // Navigate to Lapor page
+                        });
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0068FF),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Yuk login terlebih dahulu',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Cancel button
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    'Nanti saja',
+                    style: TextStyle(
+                      color: Color(0xFF666666),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

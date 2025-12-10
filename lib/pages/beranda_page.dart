@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'notifikasi_page.dart';
+import 'profile_page.dart';
 
 class BerandaPage extends StatelessWidget {
   const BerandaPage({super.key});
@@ -91,9 +92,19 @@ class BerandaPage extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 25,
-            backgroundImage: const AssetImage('assets/images/profile/profile.png'),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfilePage(),
+                ),
+              );
+            },
+            child: CircleAvatar(
+              radius: 25,
+              backgroundImage: const AssetImage('assets/images/profile/profile.png'),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
