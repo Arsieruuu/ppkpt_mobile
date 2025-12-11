@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../services/auth_service.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -9,6 +10,7 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
+  final AuthService _authService = AuthService();
   late AnimationController _logoController;
   late AnimationController _textController;
   late Animation<double> _logoFadeAnimation;
@@ -74,10 +76,20 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     await Future.delayed(const Duration(milliseconds: 800));
     _textController.forward();
 
-    // Navigate to onboarding page after splash duration
+    // Wait for animation to complete
     await Future.delayed(const Duration(milliseconds: 3500));
+    
     if (mounted) {
-      Navigator.of(context).pushReplacementNamed('/onboarding');
+      // Check if user is already logged in
+      final isLoggedIn = await _authService.isLoggedIn();
+      
+      if (isLoggedIn) {
+        // If logged in, skip onboarding and go directly to main page
+        Navigator.of(context).pushReplacementNamed('/main');
+      } else {
+        // If not logged in (guest), show onboarding
+        Navigator.of(context).pushReplacementNamed('/onboarding');
+      }
     }
   }
 

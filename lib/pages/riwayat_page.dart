@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/report.dart';
 import '../widgets/report_card.dart';
 import '../services/laporan_service.dart';
+import '../services/auth_service.dart';
 
 class RiwayatPage extends StatefulWidget {
   const RiwayatPage({super.key});
@@ -13,8 +14,11 @@ class RiwayatPage extends StatefulWidget {
 class _RiwayatPageState extends State<RiwayatPage>
     with SingleTickerProviderStateMixin {
   final LaporanService _laporanService = LaporanService();
+  final AuthService _authService = AuthService();
   late TabController _tabController;
   bool isLoading = false;
+  bool isCheckingLogin = true;
+  bool isLoggedIn = false;
   String selectedFilter = 'Semua';
   List<Report> allReports = [];
 
@@ -22,7 +26,26 @@ class _RiwayatPageState extends State<RiwayatPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadLaporan();
+    _checkLoginAndLoadData();
+  }
+
+  Future<void> _checkLoginAndLoadData() async {
+    setState(() {
+      isCheckingLogin = true;
+    });
+
+    // Check login status
+    final loggedIn = await _authService.isLoggedIn();
+
+    setState(() {
+      isLoggedIn = loggedIn;
+      isCheckingLogin = false;
+    });
+
+    // Load data only if logged in
+    if (loggedIn) {
+      _loadLaporan();
+    }
   }
 
   @override
@@ -40,11 +63,11 @@ class _RiwayatPageState extends State<RiwayatPage>
       print('=== FETCHING LAPORAN ===');
       final result = await _laporanService.getMyLaporan();
       print('API Result: $result');
-      
+
       if (result['success'] == true && result['data'] != null) {
         final List<dynamic> data = result['data'];
         print('Total laporan: ${data.length}');
-        
+
         setState(() {
           allReports = data.map((item) {
             print('=== MAPPING ITEM ===');
@@ -54,13 +77,13 @@ class _RiwayatPageState extends State<RiwayatPage>
             print('Jenis: ${item['jenis_kekerasan']}');
             print('Status: ${item['status_baru']}');
             print('==================');
-            
+
             // API sudah menyediakan jam dan tanggal yang terformat
             String reportTime = item['jam'] ?? '00:00';
-            
+
             // Parse tanggal dari format "12 Des" ke DateTime
             DateTime reportDate = _parseTanggalIndonesia(item['tanggal']);
-            
+
             // Gunakan id dari database untuk fetch detail nanti
             return Report(
               id: item['kode_laporan']?.toString() ?? 'LP-${item['id']}',
@@ -90,21 +113,31 @@ class _RiwayatPageState extends State<RiwayatPage>
 
   DateTime _parseTanggalIndonesia(String? tanggalStr) {
     if (tanggalStr == null) return DateTime.now();
-    
+
     try {
       // Format dari API: "12 Des"
       final parts = tanggalStr.split(' ');
       if (parts.length != 2) return DateTime.now();
-      
+
       final day = int.parse(parts[0]);
       final monthMap = {
-        'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'Mei': 5, 'Jun': 6,
-        'Jul': 7, 'Agu': 8, 'Sep': 9, 'Okt': 10, 'Nov': 11, 'Des': 12
+        'Jan': 1,
+        'Feb': 2,
+        'Mar': 3,
+        'Apr': 4,
+        'Mei': 5,
+        'Jun': 6,
+        'Jul': 7,
+        'Agu': 8,
+        'Sep': 9,
+        'Okt': 10,
+        'Nov': 11,
+        'Des': 12,
       };
-      
+
       final month = monthMap[parts[1]] ?? DateTime.now().month;
       final year = DateTime.now().year;
-      
+
       return DateTime(year, month, day);
     } catch (e) {
       print('Error parsing tanggal: $e');
@@ -168,7 +201,8 @@ class _RiwayatPageState extends State<RiwayatPage>
   }
 
   List<Report> get progressReports {
-    final filtered = allReports
+    // Tidak pakai filter untuk progress (user hanya bisa punya 1 laporan aktif)
+    return allReports
         .where(
           (report) =>
               report.status == ReportStatus.dalamProses ||
@@ -176,10 +210,10 @@ class _RiwayatPageState extends State<RiwayatPage>
               report.status == ReportStatus.prosesLanjutan,
         )
         .toList();
-    return _filterByDate(filtered);
   }
 
   List<Report> get completedReports {
+    // Pakai filter untuk completed (bisa banyak laporan selesai/ditolak)
     final filtered = allReports
         .where(
           (report) =>
@@ -214,161 +248,192 @@ class _RiwayatPageState extends State<RiwayatPage>
             fit: BoxFit.cover,
           ),
         ),
-        child: Column(
-          children: [
-            // Tab Navigation
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(16),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  indicator: BoxDecoration(
-                    color: const Color(0xFF0068FF),
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  labelColor: Colors.white,
-                  unselectedLabelColor: Colors.grey,
-                  labelStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  unselectedLabelStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  dividerColor: Colors.transparent,
-                  tabs: const [
-                    Tab(text: 'Progress'),
-                    Tab(text: 'Selesai'),
-                  ],
-                ),
-              ),
-            ),
-            // Filter button
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+        child: isCheckingLogin
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFF0068FF)),
+              )
+            : Column(
                 children: [
-                  PopupMenuButton<String>(
-                    icon: Image.asset(
-                      'assets/icons/ic_filter.png',
-                      width: 24,
-                      height: 24,
-                    ),
-                    offset: const Offset(0, 40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    onSelected: (String value) {
-                      setState(() {
-                        selectedFilter = value;
-                      });
-                    },
-                    itemBuilder: (BuildContext context) =>
-                        <PopupMenuEntry<String>>[
-                          PopupMenuItem<String>(
-                            value: 'Semua',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  selectedFilter == 'Semua'
-                                      ? Icons.radio_button_checked
-                                      : Icons.radio_button_unchecked,
-                                  color: const Color(0xFF0068FF),
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 12),
-                                const Text('Semua'),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem<String>(
-                            value: 'Hari Ini',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  selectedFilter == 'Hari Ini'
-                                      ? Icons.radio_button_checked
-                                      : Icons.radio_button_unchecked,
-                                  color: const Color(0xFF0068FF),
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 12),
-                                const Text('Hari Ini'),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem<String>(
-                            value: 'Minggu Ini',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  selectedFilter == 'Minggu Ini'
-                                      ? Icons.radio_button_checked
-                                      : Icons.radio_button_unchecked,
-                                  color: const Color(0xFF0068FF),
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 12),
-                                const Text('Minggu Ini'),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem<String>(
-                            value: 'Bulan Ini',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  selectedFilter == 'Bulan Ini'
-                                      ? Icons.radio_button_checked
-                                      : Icons.radio_button_unchecked,
-                                  color: const Color(0xFF0068FF),
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 12),
-                                const Text('Bulan Ini'),
-                              ],
-                            ),
-                          ),
+                  // Tab Navigation
+                  Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.all(16),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5F5F5),
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      child: TabBar(
+                        controller: _tabController,
+                        indicator: BoxDecoration(
+                          color: const Color(0xFF0068FF),
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        labelColor: Colors.white,
+                        unselectedLabelColor: Colors.grey,
+                        labelStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        unselectedLabelStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        dividerColor: Colors.transparent,
+                        tabs: const [
+                          Tab(text: 'Progress'),
+                          Tab(text: 'Selesai'),
                         ],
+                      ),
+                    ),
+                  ),
+                  // Filter button - hanya muncul di tab Selesai (index 1)
+                  AnimatedBuilder(
+                    animation: _tabController,
+                    builder: (context, child) {
+                      // Hanya tampilkan filter jika tab Selesai aktif
+                      if (_tabController.index == 1) {
+                        return Container(
+                          color: Colors.white,
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: 8,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              PopupMenuButton<String>(
+                                icon: Image.asset(
+                                  'assets/icons/ic_filter.png',
+                                  width: 24,
+                                  height: 24,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(
+                                      Icons.filter_list,
+                                      color: Color(0xFF0068FF),
+                                    );
+                                  },
+                                ),
+                                offset: const Offset(0, 40),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                onSelected: (String value) {
+                                  setState(() {
+                                    selectedFilter = value;
+                                  });
+                                },
+                                itemBuilder: (BuildContext context) =>
+                                    <PopupMenuEntry<String>>[
+                                      PopupMenuItem<String>(
+                                        value: 'Semua',
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              selectedFilter == 'Semua'
+                                                  ? Icons.radio_button_checked
+                                                  : Icons
+                                                        .radio_button_unchecked,
+                                              color: const Color(0xFF0068FF),
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            const Text('Semua'),
+                                          ],
+                                        ),
+                                      ),
+                                      PopupMenuItem<String>(
+                                        value: 'Hari Ini',
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              selectedFilter == 'Hari Ini'
+                                                  ? Icons.radio_button_checked
+                                                  : Icons
+                                                        .radio_button_unchecked,
+                                              color: const Color(0xFF0068FF),
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            const Text('Hari Ini'),
+                                          ],
+                                        ),
+                                      ),
+                                      PopupMenuItem<String>(
+                                        value: 'Minggu Ini',
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              selectedFilter == 'Minggu Ini'
+                                                  ? Icons.radio_button_checked
+                                                  : Icons
+                                                        .radio_button_unchecked,
+                                              color: const Color(0xFF0068FF),
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            const Text('Minggu Ini'),
+                                          ],
+                                        ),
+                                      ),
+                                      PopupMenuItem<String>(
+                                        value: 'Bulan Ini',
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              selectedFilter == 'Bulan Ini'
+                                                  ? Icons.radio_button_checked
+                                                  : Icons
+                                                        .radio_button_unchecked,
+                                              color: const Color(0xFF0068FF),
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            const Text('Bulan Ini'),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      // Kembalikan empty container jika tab Progress
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                  // Content
+                  Expanded(
+                    child: isLoading
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF0068FF),
+                            ),
+                          )
+                        : TabBarView(
+                            controller: _tabController,
+                            children: [
+                              RefreshIndicator(
+                                onRefresh: _loadLaporan,
+                                color: const Color(0xFF0068FF),
+                                child: _buildReportList(progressReports, true),
+                              ),
+                              RefreshIndicator(
+                                onRefresh: _loadLaporan,
+                                color: const Color(0xFF0068FF),
+                                child: _buildReportList(
+                                  completedReports,
+                                  false,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
                 ],
               ),
-            ),
-            // Content
-            Expanded(
-              child: isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF0068FF),
-                      ),
-                    )
-                  : TabBarView(
-                      controller: _tabController,
-                      children: [
-                        RefreshIndicator(
-                          onRefresh: _loadLaporan,
-                          color: const Color(0xFF0068FF),
-                          child: _buildReportList(progressReports, true),
-                        ),
-                        RefreshIndicator(
-                          onRefresh: _loadLaporan,
-                          color: const Color(0xFF0068FF),
-                          child: _buildReportList(completedReports, false),
-                        ),
-                      ],
-                    ),
-            ),
-          ],
-        ),
       ),
     );
   }

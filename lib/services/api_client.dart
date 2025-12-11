@@ -24,14 +24,29 @@ class ApiClient {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          print('=== REQUEST INTERCEPTOR ===');
+          print('Method: ${options.method}');
+          print('URL: ${options.uri}');
+          print('Token in memory: ${_token != null ? "YES" : "NO"}');
+          
           if (_token != null) {
             options.headers['Authorization'] = 'Bearer $_token';
+            print('✓ Authorization header added');
+          } else {
+            print('✗ No token available');
           }
+          
+          print('Headers: ${options.headers}');
           return handler.next(options);
         },
         onError: (error, handler) {
+          print('=== ERROR INTERCEPTOR ===');
+          print('Status: ${error.response?.statusCode}');
+          print('Message: ${error.message}');
+          
           // Handle error global
           if (error.response?.statusCode == 401) {
+            print('✗ 401 Unauthorized - Clearing token');
             // Token expired, clear token
             clearToken();
           }
@@ -71,8 +86,22 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
-      return await _dio.get(path, queryParameters: queryParameters);
+      print('=== API CLIENT GET REQUEST ===');
+      print('URL: ${ApiConfig.baseUrl}$path');
+      print('Token exists: ${_token != null}');
+      if (_token != null) {
+        print('Token preview: ${_token!.substring(0, _token!.length > 20 ? 20 : _token!.length)}...');
+      }
+      print('Query Params: $queryParameters');
+      
+      final response = await _dio.get(path, queryParameters: queryParameters);
+      
+      print('✓ GET Success - Status: ${response.statusCode}');
+      return response;
     } on DioException catch (e) {
+      print('✗ GET Failed - Type: ${e.type}, Message: ${e.message}');
+      print('Response Status: ${e.response?.statusCode}');
+      print('Response Data: ${e.response?.data}');
       throw _handleError(e);
     }
   }
@@ -126,7 +155,16 @@ class ApiClient {
         return 'Koneksi timeout. Periksa koneksi internet Anda.';
       case DioExceptionType.badResponse:
         final statusCode = error.response?.statusCode;
-        final message = error.response?.data['message'];
+        
+        // Safely extract message from response data
+        String? message;
+        final responseData = error.response?.data;
+        if (responseData is Map<String, dynamic>) {
+          message = responseData['message'] as String?;
+        } else if (responseData is String) {
+          message = responseData;
+        }
+        
         if (statusCode == 400) {
           return message ?? 'Data tidak valid.';
         } else if (statusCode == 401) {

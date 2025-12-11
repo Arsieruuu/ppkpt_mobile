@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/mahasiswa_service.dart';
+import '../services/profile_service.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -14,7 +14,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _fullNameController = TextEditingController();
   final _jurusanController = TextEditingController();
   final _phoneNumberController = TextEditingController();
-  final _mahasiswaService = MahasiswaService();
+  final _profileService = ProfileService();
 
   bool _isLoading = false;
   bool _isFetchingData = true;
@@ -30,19 +30,32 @@ class _EditProfilePageState extends State<EditProfilePage> {
       _isFetchingData = true;
     });
 
-    final response = await _mahasiswaService.getMyProfile();
+    print('=== EDIT PROFILE PAGE: Loading Profile Data ===');
+    final response = await _profileService.getProfile();
+    
+    print('Response received: $response');
+    print('Response type: ${response.runtimeType}');
+    print('Response keys: ${response.keys.toList()}');
     
     if (!mounted) return;
     
-    if (response['success'] == true && response['data'] != null) {
-      final data = response['data'];
+    // Check if response has 'profile' key (ProfileService format)
+    if (response['success'] == true && response['profile'] != null) {
+      final profile = response['profile'];
+      print('✓ Profile data found: $profile');
+      
       setState(() {
-        _nimController.text = data['nim']?.toString() ?? '';
-        _fullNameController.text = data['full_name']?.toString() ?? '';
-        _jurusanController.text = data['jurusan']?.toString() ?? '';
-        _phoneNumberController.text = data['phone_number']?.toString() ?? '';
+        _nimController.text = profile.nim ?? '';
+        _fullNameController.text = profile.fullName ?? '';
+        _jurusanController.text = profile.jurusan ?? '';
+        _phoneNumberController.text = profile.phoneNumber ?? '';
       });
-    } else {
+      
+      print('✓ Controllers populated successfully');
+    } 
+    // Error case
+    else {
+      print('✗ Failed to load profile data');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(response['message'] ?? 'Gagal memuat data'),
@@ -65,7 +78,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       _isLoading = true;
     });
 
-    final response = await _mahasiswaService.updateMyProfile(
+    final response = await _profileService.updateProfile(
       nim: _nimController.text,
       fullName: _fullNameController.text,
       jurusan: _jurusanController.text,
@@ -266,6 +279,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 }
                                 if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
                                   return 'Nomor telepon hanya boleh berisi angka';
+                                }
+                                if (value.length < 10 || value.length > 15) {
+                                  return 'Nomor telepon harus 10-15 digit';
                                 }
                                 return null;
                               },

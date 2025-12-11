@@ -78,15 +78,23 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     });
   }
 
-  final List<Widget> _pages = [
-    const BerandaPage(),
-    const LaporPage(),
-    const RiwayatPage(),
-    const ProfilePage(),
-  ];
+  // Method to change tab from child widgets
+  void _navigateToTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Build pages dynamically to pass callback
+    final pages = [
+      BerandaPage(onNavigateToTab: _navigateToTab),
+      const LaporPage(),
+      const RiwayatPage(),
+      const ProfilePage(),
+    ];
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBody: true,
@@ -97,7 +105,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         transitionBuilder: (child, animation) {
           return FadeTransition(opacity: animation, child: child);
         },
-        child: _pages[_currentIndex],
+        child: pages[_currentIndex],
       ),
       bottomNavigationBar: Container(
         margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
@@ -155,9 +163,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     final isSelected = _currentIndex == index;
     return GestureDetector(
       onTap: () {
-        // Check if trying to access Lapor page without login
-        if (index == 1 && !isLoggedIn) {
-          _showLoginPromptDialog();
+        // Check if trying to access restricted pages without login
+        if ((index == 1 || index == 2 || index == 3) && !isLoggedIn) {
+          _showLoginPromptDialog(index);
         } else {
           setState(() {
             _currentIndex = index;
@@ -201,9 +209,24 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     );
   }
 
-  void _showLoginPromptDialog() {
+  void _showLoginPromptDialog(int targetIndex) {
+    // Get the feature name based on index
+    String featureName = '';
+    switch (targetIndex) {
+      case 1:
+        featureName = 'pelaporan';
+        break;
+      case 2:
+        featureName = 'riwayat';
+        break;
+      case 3:
+        featureName = 'profile';
+        break;
+    }
+
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
@@ -215,7 +238,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Sad emoji
-                const Text('😞', style: TextStyle(fontSize: 64)),
+                const Text('😔', style: TextStyle(fontSize: 64)),
                 const SizedBox(height: 16),
                 // Message
                 const Text(
@@ -228,9 +251,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Kamu harus login terlebih dahulu untuk mengakses fitur pelaporan',
-                  style: TextStyle(fontSize: 14, color: Color(0xFF666666)),
+                Text(
+                  'Kamu harus login terlebih dahulu untuk mengakses fitur $featureName',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF666666),
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -248,11 +274,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                           builder: (context) => const LoginPage(),
                         ),
                       );
-                      // If login successful, check login status and navigate to Lapor page
+                      // If login successful, check login status and navigate to target page
                       if (result == true && mounted) {
                         await _checkLoginStatus(); // Refresh login status
                         setState(() {
-                          _currentIndex = 1; // Navigate to Lapor page
+                          _currentIndex =
+                              targetIndex; // Navigate to target page
                         });
                       }
                     },
@@ -267,7 +294,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                     child: const Text(
                       'Yuk login terlebih dahulu',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

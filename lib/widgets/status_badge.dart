@@ -16,8 +16,8 @@ class StatusBadge extends StatelessWidget {
 
     switch (status) {
       case ReportStatus.dalamProses:
-        color = const Color(0xFF9E9E9E);
-        bgColor = color.withOpacity(0.15);
+        color = const Color(0xFF9E9E9E); // Abu-abu untuk text dan icon
+        bgColor = const Color(0xFFF5F5F5); // Background abu-abu muda
         text = 'Dalam Proses';
         icon = Icons.hourglass_empty;
         break;
