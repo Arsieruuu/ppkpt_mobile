@@ -162,6 +162,6 @@ class ReportCard extends StatelessWidget {
       '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
       'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ];
-    return '${months[date.month]} ${date.year.toString().substring(2)}';
+    return '${date.day} ${months[date.month]}';
   }
 }

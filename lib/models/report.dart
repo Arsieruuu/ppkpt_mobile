@@ -5,6 +5,7 @@ class Report {
   final String time;
   final DateTime date;
   final ReportStatus status;
+  final int? databaseId; // ID dari database untuk fetch detail riwayat
 
   Report({
     required this.id,
@@ -12,6 +13,7 @@ class Report {
     required this.time,
     required this.date,
     required this.status,
+    this.databaseId,
   });
 }
 

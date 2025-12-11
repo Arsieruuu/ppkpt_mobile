@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/report.dart';
 import '../widgets/report_card.dart';
+import '../services/laporan_service.dart';
 
 class RiwayatPage extends StatefulWidget {
   const RiwayatPage({super.key});
@@ -11,15 +12,17 @@ class RiwayatPage extends StatefulWidget {
 
 class _RiwayatPageState extends State<RiwayatPage>
     with SingleTickerProviderStateMixin {
+  final LaporanService _laporanService = LaporanService();
   late TabController _tabController;
   bool isLoading = false;
-  String selectedFilter =
-      'Semua'; // Filter state: Semua, Hari Ini, Minggu Ini, Bulan Ini
+  String selectedFilter = 'Semua';
+  List<Report> allReports = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _loadLaporan();
   }
 
   @override
@@ -28,44 +31,103 @@ class _RiwayatPageState extends State<RiwayatPage>
     super.dispose();
   }
 
-  // Data dummy
-  final List<Report> allReports = [
-    Report(
-      id: 'LP-001234KV',
-      title: 'Kekerasan Verbal',
-      time: '17.45',
-      date: DateTime(2025, 6, 24),
-      status: ReportStatus.dalamProses,
-    ),
-    Report(
-      id: 'LP-001234KV',
-      title: 'Kekerasan Verbal',
-      time: '20.35',
-      date: DateTime(2025, 6, 24),
-      status: ReportStatus.verifikasi,
-    ),
-    Report(
-      id: 'LP-001234KV',
-      title: 'Kekerasan Verbal',
-      time: '09.40',
-      date: DateTime(2025, 6, 25),
-      status: ReportStatus.prosesLanjutan,
-    ),
-    Report(
-      id: 'LP-078957KS',
-      title: 'Kekerasan Seksual',
-      time: '17.45',
-      date: DateTime(2025, 6, 24),
-      status: ReportStatus.selesai,
-    ),
-    Report(
-      id: 'LP-123456KF',
-      title: 'Kekerasan Fisik',
-      time: '14.30',
-      date: DateTime(2025, 6, 23),
-      status: ReportStatus.ditolak,
-    ),
-  ];
+  Future<void> _loadLaporan() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      print('=== FETCHING LAPORAN ===');
+      final result = await _laporanService.getMyLaporan();
+      print('API Result: $result');
+      
+      if (result['success'] == true && result['data'] != null) {
+        final List<dynamic> data = result['data'];
+        print('Total laporan: ${data.length}');
+        
+        setState(() {
+          allReports = data.map((item) {
+            print('=== MAPPING ITEM ===');
+            print('Kode Laporan: ${item['kode_laporan']}');
+            print('Jam: ${item['jam']}');
+            print('Tanggal: ${item['tanggal']}');
+            print('Jenis: ${item['jenis_kekerasan']}');
+            print('Status: ${item['status_baru']}');
+            print('==================');
+            
+            // API sudah menyediakan jam dan tanggal yang terformat
+            String reportTime = item['jam'] ?? '00:00';
+            
+            // Parse tanggal dari format "12 Des" ke DateTime
+            DateTime reportDate = _parseTanggalIndonesia(item['tanggal']);
+            
+            // Gunakan id dari database untuk fetch detail nanti
+            return Report(
+              id: item['kode_laporan']?.toString() ?? 'LP-${item['id']}',
+              title: item['jenis_kekerasan'] ?? 'Laporan',
+              time: reportTime,
+              date: reportDate,
+              status: _mapStatus(item['status_baru']),
+              databaseId: item['id'], // Simpan database ID untuk fetch detail
+            );
+          }).toList();
+          isLoading = false;
+        });
+        print('Mapped reports: ${allReports.length}');
+      } else {
+        print('API failed or no data');
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading laporan: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  DateTime _parseTanggalIndonesia(String? tanggalStr) {
+    if (tanggalStr == null) return DateTime.now();
+    
+    try {
+      // Format dari API: "12 Des"
+      final parts = tanggalStr.split(' ');
+      if (parts.length != 2) return DateTime.now();
+      
+      final day = int.parse(parts[0]);
+      final monthMap = {
+        'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'Mei': 5, 'Jun': 6,
+        'Jul': 7, 'Agu': 8, 'Sep': 9, 'Okt': 10, 'Nov': 11, 'Des': 12
+      };
+      
+      final month = monthMap[parts[1]] ?? DateTime.now().month;
+      final year = DateTime.now().year;
+      
+      return DateTime(year, month, day);
+    } catch (e) {
+      print('Error parsing tanggal: $e');
+      return DateTime.now();
+    }
+  }
+
+  ReportStatus _mapStatus(String? status) {
+    switch (status) {
+      case 'Dalam Proses':
+        return ReportStatus.dalamProses;
+      case 'Verifikasi':
+        return ReportStatus.verifikasi;
+      case 'Proses Lanjutan':
+        return ReportStatus.prosesLanjutan;
+      case 'Selesai':
+        return ReportStatus.selesai;
+      case 'Ditolak':
+        return ReportStatus.ditolak;
+      default:
+        return ReportStatus.dalamProses;
+    }
+  }
 
   List<Report> _filterByDate(List<Report> reports) {
     final now = DateTime.now();
@@ -283,13 +345,27 @@ class _RiwayatPageState extends State<RiwayatPage>
             ),
             // Content
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildReportList(progressReports, true),
-                  _buildReportList(completedReports, false),
-                ],
-              ),
+              child: isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF0068FF),
+                      ),
+                    )
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        RefreshIndicator(
+                          onRefresh: _loadLaporan,
+                          color: const Color(0xFF0068FF),
+                          child: _buildReportList(progressReports, true),
+                        ),
+                        RefreshIndicator(
+                          onRefresh: _loadLaporan,
+                          color: const Color(0xFF0068FF),
+                          child: _buildReportList(completedReports, false),
+                        ),
+                      ],
+                    ),
             ),
           ],
         ),
@@ -298,10 +374,6 @@ class _RiwayatPageState extends State<RiwayatPage>
   }
 
   Widget _buildReportList(List<Report> reports, bool isProgress) {
-    if (isLoading) {
-      return const LoadingWidget();
-    }
-
     if (reports.isEmpty) {
       return EmptyWidget(isProgress: isProgress);
     }

@@ -3,6 +3,7 @@ import 'laporan_success_page.dart';
 import 'login_page.dart';
 import '../services/auth_service.dart';
 import '../services/laporan_service.dart';
+import '../widgets/active_laporan_dialog.dart';
 
 class LaporPage extends StatefulWidget {
   const LaporPage({super.key});
@@ -17,6 +18,8 @@ class _LaporPageState extends State<LaporPage> {
   bool _isLoading = true;
   bool _isLoggedIn = false;
   bool _isSubmitting = false;
+  bool _hasActiveLaporan = false;
+  Map<String, dynamic>? _activeLaporanData;
   int currentStep = 0;
 
   // Data Diri Controllers
@@ -46,24 +49,66 @@ class _LaporPageState extends State<LaporPage> {
   @override
   void initState() {
     super.initState();
-    _checkLoginStatus();
+    _checkLoginAndActiveLaporan();
   }
 
-  Future<void> _checkLoginStatus() async {
-    final isLoggedIn = await _authService.isLoggedIn();
-
+  Future<void> _checkLoginAndActiveLaporan() async {
     setState(() {
-      _isLoggedIn = isLoggedIn;
-      _isLoading = false;
+      _isLoading = true;
     });
 
-    // Jika belum login, redirect ke login page
-    if (!isLoggedIn && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      );
+    // 1. Check login status
+    final isLoggedIn = await _authService.isLoggedIn();
+
+    if (!isLoggedIn) {
+      setState(() {
+        _isLoggedIn = false;
+        _isLoading = false;
+      });
+
+      // Redirect ke login page jika belum login
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      }
+      return;
     }
+
+    // 2. Check active laporan
+    final checkResult = await _laporanService.checkActiveLaporan();
+
+    setState(() {
+      _isLoggedIn = true;
+      _isLoading = false;
+      
+      if (checkResult['success'] == true) {
+        _hasActiveLaporan = checkResult['has_active'] ?? false;
+        _activeLaporanData = checkResult['laporan_aktif'];
+        
+        // Jika ada laporan aktif, tampilkan dialog
+        if (_hasActiveLaporan && _activeLaporanData != null && mounted) {
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              _showActiveLaporanDialog();
+            }
+          });
+        }
+      }
+    });
+  }
+
+  void _showActiveLaporanDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => ActiveLaporanDialog(
+        kodeLaporan: _activeLaporanData?['kode_laporan'] ?? 'N/A',
+        status: _activeLaporanData?['status'] ?? 'Dalam Proses',
+        jenisKekerasan: _activeLaporanData?['jenis_kekerasan'] ?? 'Laporan',
+      ),
+    );
   }
 
   @override
@@ -80,7 +125,7 @@ class _LaporPageState extends State<LaporPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Show loading while checking login status
+    // Show loading while checking login status and active laporan
     if (_isLoading) {
       return Scaffold(
         body: Container(
@@ -102,6 +147,89 @@ class _LaporPageState extends State<LaporPage> {
     // Only show form if logged in (redirect will happen in initState if not)
     if (!_isLoggedIn) {
       return const SizedBox.shrink();
+    }
+
+    // Show message if user has active laporan
+    if (_hasActiveLaporan) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/backgrounds/background_page.png'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF4E6),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.pending_actions,
+                        color: Color(0xFFFF9800),
+                        size: 40,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Laporan Sedang Diproses',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1A1A1A),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Anda masih memiliki laporan yang sedang diproses. Harap tunggu hingga laporan selesai atau ditolak sebelum membuat laporan baru.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () {
+                        _checkLoginAndActiveLaporan(); // Refresh status
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0068FF),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Refresh Status',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     return Scaffold(
@@ -1622,13 +1750,38 @@ class _LaporPageState extends State<LaporPage> {
           );
         }
       } else {
+        // Check jika error karena masih ada laporan aktif
+        final errorMsg = result['message'] ?? 'Gagal mengirim laporan';
+        
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result['message'] ?? 'Gagal mengirim laporan'),
-              backgroundColor: const Color(0xFFFF4D4F),
-            ),
-          );
+          if (errorMsg.contains('masih memiliki laporan') || 
+              errorMsg.contains('sedang diproses')) {
+            // Tampilkan dialog khusus untuk laporan aktif
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => ActiveLaporanDialog(
+                kodeLaporan: result['laporan_aktif']?['kode_laporan'] ?? 'N/A',
+                status: result['laporan_aktif']?['status'] ?? 'Dalam Proses',
+                jenisKekerasan: result['laporan_aktif']?['jenis_kekerasan'] ?? 'Laporan',
+              ),
+            );
+            
+            // Refresh status setelah dialog ditutup
+            Future.delayed(const Duration(seconds: 2), () {
+              if (mounted) {
+                _checkLoginAndActiveLaporan();
+              }
+            });
+          } else {
+            // Error lainnya
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(errorMsg),
+                backgroundColor: const Color(0xFFFF4D4F),
+              ),
+            );
+          }
         }
       }
     } catch (e) {

@@ -3,6 +3,37 @@ import 'api_client.dart';
 class LaporanService {
   final ApiClient _apiClient = ApiClient();
 
+  // Check apakah user punya laporan aktif
+  Future<Map<String, dynamic>> checkActiveLaporan() async {
+    try {
+      print('=== CHECKING ACTIVE LAPORAN ===');
+      final response = await _apiClient.get('/api/laporan/check-active');
+
+      print('Check Active Response: ${response.data}');
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'has_active': response.data['has_active'] ?? false,
+          'can_create': response.data['can_create'] ?? true,
+          'laporan_aktif': response.data['laporan_aktif'],
+          'message': response.data['message'] ?? '',
+        };
+      }
+
+      return {
+        'success': false,
+        'message': 'Gagal mengecek status laporan',
+      };
+    } catch (e) {
+      print('Error in checkActiveLaporan: $e');
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
+  }
+
   // Submit laporan baru
   Future<Map<String, dynamic>> submitLaporan({
     required String nama,
@@ -74,6 +105,26 @@ class LaporanService {
       return {'success': false, 'message': 'Gagal mengambil data laporan'};
     } catch (e) {
       print('Error in getMyLaporan: $e');
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
+  // Ambil detail riwayat laporan berdasarkan ID
+  Future<Map<String, dynamic>> getRiwayatLaporan(int laporanId) async {
+    try {
+      final response = await _apiClient.get('/api/riwayat-laporan/$laporanId');
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'Berhasil mengambil riwayat',
+          'data': response.data['data'] ?? [],
+        };
+      }
+
+      return {'success': false, 'message': 'Gagal mengambil riwayat laporan'};
+    } catch (e) {
+      print('Error in getRiwayatLaporan: $e');
       return {'success': false, 'message': e.toString()};
     }
   }

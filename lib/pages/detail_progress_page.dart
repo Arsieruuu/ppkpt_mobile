@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/report.dart';
+import '../services/laporan_service.dart';
 
 class DetailProgressPage extends StatefulWidget {
   final Report report;
@@ -11,6 +12,53 @@ class DetailProgressPage extends StatefulWidget {
 }
 
 class _DetailProgressPageState extends State<DetailProgressPage> {
+  final LaporanService _laporanService = LaporanService();
+  bool isLoading = true;
+  List<Map<String, dynamic>> riwayatData = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRiwayat();
+  }
+
+  Future<void> _loadRiwayat() async {
+    if (widget.report.databaseId == null) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      print('=== FETCHING RIWAYAT FOR ID: ${widget.report.databaseId} ===');
+      final result = await _laporanService.getRiwayatLaporan(widget.report.databaseId!);
+      print('Riwayat Result: $result');
+      
+      if (result['success'] == true && result['data'] != null) {
+        setState(() {
+          riwayatData = List<Map<String, dynamic>>.from(result['data']);
+          isLoading = false;
+        });
+        print('Total riwayat: ${riwayatData.length}');
+      } else {
+        print('Failed to load riwayat');
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading riwayat: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,6 +204,43 @@ class _DetailProgressPageState extends State<DetailProgressPage> {
   }
 
   Widget _buildTimelineBasedOnStatus() {
+    // Jika masih loading, tampilkan skeleton
+    if (isLoading) {
+      return Column(
+        children: [
+          _buildTimelineItem(
+            date: '...',
+            time: '...',
+            title: 'Memuat data riwayat...',
+            isActive: true,
+            isLast: true,
+            customIcon: Icons.hourglass_empty,
+          ),
+        ],
+      );
+    }
+
+    // Jika ada data dari API, tampilkan
+    if (riwayatData.isNotEmpty) {
+      return Column(
+        children: riwayatData.asMap().entries.map((entry) {
+          final index = entry.key;
+          final item = entry.value;
+          final isLast = index == riwayatData.length - 1;
+          
+          return _buildTimelineItem(
+            date: _formatApiDate(item['created_at']),
+            time: _formatApiTime(item['created_at']),
+            title: item['aksi'] ?? 'Status tidak diketahui',
+            isActive: isLast, // Item terakhir adalah yang aktif
+            isLast: isLast,
+            customIcon: _getIconForStatus(item['status_baru']),
+          );
+        }).toList(),
+      );
+    }
+
+    // Fallback jika tidak ada data, gunakan logic lama
     switch (widget.report.status) {
       case ReportStatus.dalamProses:
         return Column(
@@ -446,6 +531,47 @@ class _DetailProgressPageState extends State<DetailProgressPage> {
       'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ];
     return '${date.day} ${months[date.month]}';
+  }
+
+  String _formatApiDate(String? timestamp) {
+    if (timestamp == null) return '';
+    try {
+      final dateTime = DateTime.parse(timestamp);
+      final months = [
+        '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      ];
+      return '${dateTime.day} ${months[dateTime.month]}';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  String _formatApiTime(String? timestamp) {
+    if (timestamp == null) return '00:00';
+    try {
+      final dateTime = DateTime.parse(timestamp);
+      return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return '00:00';
+    }
+  }
+
+  IconData _getIconForStatus(String? status) {
+    switch (status) {
+      case 'Dalam Proses':
+        return Icons.hourglass_empty;
+      case 'Verifikasi':
+        return Icons.verified_outlined;
+      case 'Proses Lanjutan':
+        return Icons.sync;
+      case 'Selesai':
+        return Icons.check_circle_outline;
+      case 'Ditolak':
+        return Icons.cancel_outlined;
+      default:
+        return Icons.info_outline;
+    }
   }
 
   Widget _buildIllustrationSection() {
