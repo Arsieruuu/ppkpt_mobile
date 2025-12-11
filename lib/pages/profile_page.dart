@@ -2,11 +2,77 @@ import 'package:flutter/material.dart';
 import 'tentang_aplikasi_page.dart';
 import 'pusat_bantuan_page.dart';
 import 'kebijakan_privasi_page.dart';
+import 'edit_profile_page.dart';
 import '../services/auth_service.dart';
+import '../services/mahasiswa_service.dart';
 import '../main.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final _mahasiswaService = MahasiswaService();
+  Map<String, dynamic>? _profileData;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final response = await _mahasiswaService.getMyProfile();
+
+    if (response['success'] == true && response['data'] != null) {
+      setState(() {
+        _profileData = response['data'];
+      });
+    } else {
+      // Silent fail - will show default data
+      debugPrint('Error loading profile: ${response['message']}');
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _navigateToEditProfile() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const EditProfilePage()),
+    );
+
+    // Refresh profile data if edit was successful
+    if (result == true) {
+      _loadProfileData();
+    }
+  }
+
+  bool _isProfileIncomplete() {
+    // If profile data is null (failed to load), consider it incomplete
+    if (_profileData == null) return true;
+
+    // Check if any required field is empty
+    final nim = _profileData!['nim']?.toString() ?? '';
+    final fullName = _profileData!['full_name']?.toString() ?? '';
+    final jurusan = _profileData!['jurusan']?.toString() ?? '';
+    final phoneNumber = _profileData!['phone_number']?.toString() ?? '';
+
+    return nim.isEmpty ||
+        fullName.isEmpty ||
+        jurusan.isEmpty ||
+        phoneNumber.isEmpty;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +115,67 @@ class ProfilePage extends StatelessWidget {
             children: [
               const SizedBox(height: 20),
 
+              // Warning Banner if profile incomplete
+              if (!_isLoading && _isProfileIncomplete())
+                InkWell(
+                  onTap: _navigateToEditProfile,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF3CD),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFFFC107),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.warning_amber_rounded,
+                          color: Color(0xFFF57C00),
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Profile Belum Lengkap',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Poppins',
+                                  color: Color(0xFFF57C00),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Lengkapi profile Anda untuk pengalaman yang lebih baik',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  fontFamily: 'Poppins',
+                                  color: Color(0xFF856404),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(
+                          Icons.arrow_forward_ios,
+                          color: Color(0xFFF57C00),
+                          size: 16,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
               // Profile Card
               Container(
                 padding: const EdgeInsets.all(24.0),
@@ -73,59 +200,50 @@ class ProfilePage extends StatelessWidget {
                           width: 100,
                           height: 100,
                           decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Colors.grey.shade200,
+                              color: Colors.grey.shade300,
                               width: 3,
                             ),
                           ),
-                          child: ClipOval(
-                            child: Image.asset(
-                              'assets/images/profile/profile.png',
-                              fit: BoxFit.cover,
-                              width: 100,
-                              height: 100,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.grey.shade200,
-                                  child: const Icon(
-                                    Icons.person,
-                                    size: 50,
-                                    color: Colors.grey,
-                                  ),
-                                );
-                              },
-                            ),
+                          child: const Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Colors.grey,
                           ),
                         ),
                         Positioned(
                           bottom: 0,
                           right: 0,
-                          child: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
+                          child: InkWell(
+                            onTap: _navigateToEditProfile,
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: Image.asset(
+                                  'assets/icons/editbutton.png',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(
+                                      Icons.edit,
+                                      size: 16,
+                                      color: Colors.blue,
+                                    );
+                                  },
                                 ),
-                              ],
-                            ),
-                            child: ClipOval(
-                              child: Image.asset(
-                                'assets/icons/editbutton.png',
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(
-                                    Icons.edit,
-                                    size: 16,
-                                    color: Colors.blue,
-                                  );
-                                },
                               ),
                             ),
                           ),
@@ -136,22 +254,26 @@ class ProfilePage extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Name
-                    const Text(
-                      'Jane Doe',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Poppins',
-                        color: Colors.black87,
-                      ),
-                    ),
+                    _isLoading
+                        ? const CircularProgressIndicator()
+                        : Text(
+                            _profileData?['full_name'] ?? 'Jane Doe',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Poppins',
+                              color: Colors.black87,
+                            ),
+                          ),
 
                     const SizedBox(height: 4),
 
-                    // NPM
-                    const Text(
-                      'NPM 23756003',
-                      style: TextStyle(
+                    // NIM
+                    Text(
+                      _profileData?['nim'] != null
+                          ? 'NIM ${_profileData!['nim']}'
+                          : 'NIM 23756003',
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w300,
                         fontFamily: 'Poppins',
@@ -161,25 +283,105 @@ class ProfilePage extends StatelessWidget {
 
                     const SizedBox(height: 16),
 
-                    // Bio Section
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.grey.shade200,
-                          width: 1,
+                    // Info Section - Clickable if incomplete
+                    InkWell(
+                      onTap: _isProfileIncomplete()
+                          ? _navigateToEditProfile
+                          : null,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: _isProfileIncomplete()
+                              ? const Color(0xFFFFF3CD)
+                              : Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _isProfileIncomplete()
+                                ? const Color(0xFFFFC107)
+                                : Colors.grey.shade200,
+                            width: 1,
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'No Bio Yet.',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          fontFamily: 'Poppins',
-                          color: Colors.grey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (_profileData?['jurusan'] != null) ...[
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.school,
+                                    size: 16,
+                                    color: Colors.grey,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _profileData!['jurusan'],
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w400,
+                                        fontFamily: 'Poppins',
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                            if (_profileData?['phone_number'] != null) ...[
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.phone,
+                                    size: 16,
+                                    color: Colors.grey,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _profileData!['phone_number'],
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w400,
+                                      fontFamily: 'Poppins',
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                            if (_profileData?['jurusan'] == null &&
+                                _profileData?['phone_number'] == null)
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.info_outline,
+                                    size: 20,
+                                    color: Color(0xFFF57C00),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Expanded(
+                                    child: Text(
+                                      'Lengkapi profile Anda untuk pengalaman lebih baik',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        fontFamily: 'Poppins',
+                                        color: Color(0xFFF57C00),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 14,
+                                    color: Color(0xFFF57C00),
+                                  ),
+                                ],
+                              ),
+                          ],
                         ),
                       ),
                     ),

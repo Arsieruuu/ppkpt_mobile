@@ -103,7 +103,12 @@ class BerandaPage extends StatelessWidget {
             },
             child: CircleAvatar(
               radius: 25,
-              backgroundImage: const AssetImage('assets/images/profile/profile.png'),
+              backgroundColor: Colors.grey.shade200,
+              child: const Icon(
+                Icons.person,
+                size: 28,
+                color: Colors.grey,
+              ),
             ),
           ),
           const SizedBox(width: 12),
