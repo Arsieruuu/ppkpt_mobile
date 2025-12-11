@@ -245,7 +245,7 @@ class _RiwayatPageState extends State<RiwayatPage>
                   dividerColor: Colors.transparent,
                   tabs: const [
                     Tab(text: 'Progress'),
-                    Tab(text: 'Selesai & Ditolak'),
+                    Tab(text: 'Selesai'),
                   ],
                 ),
               ),
