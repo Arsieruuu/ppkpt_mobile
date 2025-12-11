@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'tentang_aplikasi_page.dart';
 import 'pusat_bantuan_page.dart';
 import 'kebijakan_privasi_page.dart';
+import '../services/auth_service.dart';
+import '../main.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -46,7 +48,7 @@ class ProfilePage extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 20),
-              
+
               // Profile Card
               Container(
                 padding: const EdgeInsets.all(24.0),
@@ -130,9 +132,9 @@ class ProfilePage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Name
                     const Text(
                       'Jane Doe',
@@ -143,9 +145,9 @@ class ProfilePage extends StatelessWidget {
                         color: Colors.black87,
                       ),
                     ),
-                    
+
                     const SizedBox(height: 4),
-                    
+
                     // NPM
                     const Text(
                       'NPM 23756003',
@@ -156,9 +158,9 @@ class ProfilePage extends StatelessWidget {
                         color: Colors.grey,
                       ),
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Bio Section
                     Container(
                       width: double.infinity,
@@ -184,9 +186,9 @@ class ProfilePage extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Help & Information Section
               Container(
                 padding: const EdgeInsets.all(20.0),
@@ -214,9 +216,9 @@ class ProfilePage extends StatelessWidget {
                         color: Color(0xFF1E90FF),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Menu Items
                     _buildMenuItem(
                       title: 'Pusat Bantuan',
@@ -229,9 +231,9 @@ class ProfilePage extends StatelessWidget {
                         );
                       },
                     ),
-                    
+
                     const Divider(height: 1, color: Colors.grey),
-                    
+
                     _buildMenuItem(
                       title: 'Tentang Aplikasi',
                       onTap: () {
@@ -243,9 +245,9 @@ class ProfilePage extends StatelessWidget {
                         );
                       },
                     ),
-                    
+
                     const Divider(height: 1, color: Colors.grey),
-                    
+
                     _buildMenuItem(
                       title: 'Kebijakan Privasi',
                       onTap: () {
@@ -257,10 +259,20 @@ class ProfilePage extends StatelessWidget {
                         );
                       },
                     ),
+
+                    const Divider(height: 1, color: Colors.grey),
+
+                    _buildMenuItem(
+                      title: 'Keluar',
+                      isLogout: true,
+                      onTap: () {
+                        _showLogoutDialog(context);
+                      },
+                    ),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 40),
             ],
           ),
@@ -272,6 +284,7 @@ class ProfilePage extends StatelessWidget {
   Widget _buildMenuItem({
     required String title,
     required VoidCallback onTap,
+    bool isLogout = false,
   }) {
     return InkWell(
       onTap: onTap,
@@ -283,21 +296,101 @@ class ProfilePage extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 fontFamily: 'Poppins',
-                color: Colors.black87,
+                color: isLogout ? const Color(0xFFFF4D4F) : Colors.black87,
               ),
             ),
-            const Icon(
-              Icons.chevron_right,
-              size: 20,
-              color: Colors.grey,
-            ),
+            const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
           ],
         ),
       ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Keluar',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
+            ),
+          ),
+          content: const Text(
+            'Apakah Anda yakin ingin keluar?',
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Poppins',
+              color: Color(0xFF666666),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text(
+                'Batal',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'Poppins',
+                  color: Color(0xFF666666),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+
+                final authService = AuthService();
+                await authService.logout();
+
+                // Kembali ke homepage (MainNavigationPage dengan index 0 = Beranda)
+                if (context.mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const MainNavigationPage(initialIndex: 0),
+                    ),
+                    (route) => false,
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF4D4F),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+              child: const Text(
+                'Keluar',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

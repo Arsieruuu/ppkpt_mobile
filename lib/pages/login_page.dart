@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,6 +12,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _npmController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
   bool _obscurePassword = true;
   bool _isLoading = false;
   bool _rememberMe = false;
@@ -28,32 +30,49 @@ class _LoginPageState extends State<LoginPage> {
         _isLoading = true;
       });
 
-      // Simulasi proses login
-      await Future.delayed(const Duration(seconds: 1));
+      try {
+        final response = await _authService.login(
+          _npmController.text,
+          _passwordController.text,
+        );
 
-      setState(() {
-        _isLoading = false;
-      });
+        setState(() {
+          _isLoading = false;
+        });
 
-      // Validasi NPM dan Password
-      if (_npmController.text == '23759031' &&
-          _passwordController.text == '123456') {
-        // Login berhasil
-        if (mounted) {
-          Navigator.pop(
-            context,
-            true,
-          ); // Return true untuk menandakan login berhasil
+        if (response['success'] == true) {
+          // LOGIN BERHASIL
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(response['message'] ?? 'Login berhasil'),
+                backgroundColor: const Color(0xFF17C964),
+              ),
+            );
+            // Navigate to main page
+            Navigator.pushReplacementNamed(context, '/main');
+          }
+        } else {
+          // LOGIN GAGAL
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(response['message'] ?? 'Login gagal'),
+                backgroundColor: const Color(0xFFFF4D4F),
+              ),
+            );
+          }
         }
-      } else {
-        // Login gagal
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('NPM / NIP atau Password salah'),
-              backgroundColor: Color(0xFFFF4D4F),
-              behavior: SnackBarBehavior.floating,
-              duration: Duration(seconds: 3),
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: const Color(0xFFFF4D4F),
             ),
           );
         }

@@ -57,11 +57,11 @@ class LaporanSuccessPage extends StatelessWidget {
                         width: 120,
                         height: 120,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2196F3),
+                          color: const Color(0xFF0068FF),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF2196F3).withOpacity(0.3),
+                              color: const Color(0xFF0068FF).withOpacity(0.3),
                               blurRadius: 20,
                               spreadRadius: 5,
                             ),
@@ -85,7 +85,7 @@ class LaporanSuccessPage extends StatelessWidget {
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Poppins',
-                      color: Color(0xFF2196F3),
+                      color: Color(0xFF0068FF),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -120,7 +120,7 @@ class LaporanSuccessPage extends StatelessWidget {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2196F3),
+                        backgroundColor: const Color(0xFF0068FF),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(28),
                         ),

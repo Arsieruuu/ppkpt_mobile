@@ -7,6 +7,7 @@ import 'pages/pelaporan_page.dart';
 import 'pages/riwayat_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/login_page.dart';
+import 'services/auth_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -52,13 +53,29 @@ class MainNavigationPage extends StatefulWidget {
 }
 
 class _MainNavigationPageState extends State<MainNavigationPage> {
+  final AuthService _authService = AuthService();
   late int _currentIndex;
-  bool isLoggedIn = false; // Simulated login status
+  bool isLoggedIn = false;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _checkLoginStatus();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh login status when returning to this page
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final loggedIn = await _authService.isLoggedIn();
+    setState(() {
+      isLoggedIn = loggedIn;
+    });
   }
 
   final List<Widget> _pages = [
@@ -198,10 +215,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Sad emoji
-                const Text(
-                  '😞',
-                  style: TextStyle(fontSize: 64),
-                ),
+                const Text('😞', style: TextStyle(fontSize: 64)),
                 const SizedBox(height: 16),
                 // Message
                 const Text(
@@ -216,10 +230,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 const SizedBox(height: 8),
                 const Text(
                   'Kamu harus login terlebih dahulu untuk mengakses fitur pelaporan',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF666666),
-                  ),
+                  style: TextStyle(fontSize: 14, color: Color(0xFF666666)),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -237,10 +248,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                           builder: (context) => const LoginPage(),
                         ),
                       );
-                      // If login successful, navigate to Lapor page
+                      // If login successful, check login status and navigate to Lapor page
                       if (result == true && mounted) {
+                        await _checkLoginStatus(); // Refresh login status
                         setState(() {
-                          isLoggedIn = true;
                           _currentIndex = 1; // Navigate to Lapor page
                         });
                       }
